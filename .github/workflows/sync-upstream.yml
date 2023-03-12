@@ -2,8 +2,7 @@ name: "Sync Upstream"
 
 on:
   schedule:
-  - cron: '0 0 * * 1' # weekly
-  - cron: '10 0 1 * *' # monthly
+  - cron: '0 0 * * *'
   
 jobs:
   sync-upstream:
