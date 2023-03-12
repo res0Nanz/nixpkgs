@@ -1,0 +1,48 @@
+name: "Sync Upstream"
+
+on:
+  schedule:
+  - cron: '0 0 * * 1' # weekly
+  - cron: '10 0 1 * *' # monthly
+  
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    if: github.repository_owner != 'NixOS'
+    strategy:
+      max-parallel: 1
+      
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Fetch remotes
+        id: remotes
+        run: |
+          git remote add upstream 'https://github.com/NixOS/nixpkgs.git'
+          git fetch upstream master nixpkgs-unstable
+          git fetch origin master more-branches
+          echo behind=$(git rev-list --count master...upstream/master) >> $GITHUB_OUTPUT
+          weekly=$(git fetch origin weekly && git log weekly -n1 --format=%ct || echo 604800)
+          echo weekly=$[ weekly - 604800 ] >> $GITHUB_OUTPUT
+          monthly=$(git fetch origin monthly && git log monthly -n1 --format=%ct || echo 2592000)
+          echo monthly=$[ monthly - 2592000 ] >> $GITHUB_OUTPUT
+          
+      - name: Sync master
+        if: steps.remotes.outputs.behind > 0
+        run: |
+          git checkout master
+          git merge --ff-only upstream/master
+          git rebase master more-branches -v
+          
+      - name: Sync weekly
+        if: steps.remotes.outputs.weekly >= 0
+        run: git branch -vf weekly upstream/nixpkgs-unstable
+        
+      - name: Sync monthly
+        if: steps.remotes.outputs.monthly >= 0
+        run: git branch -vf weekly upstream/nixpkgs-unstable
+    
+      - name: Push changes
+        run: git push --all origin
+        
+      
