@@ -20,18 +20,21 @@ jobs:
           git remote add upstream 'https://github.com/NixOS/nixpkgs.git'
           git fetch upstream master nixpkgs-unstable
           git fetch origin master more-branches
-          echo behind=$(git rev-list --count master...upstream/master) >> $GITHUB_OUTPUT
-          weekly=$(git fetch origin weekly && git log weekly -n1 --format=%ct || echo 604800)
-          echo weekly=$[ weekly - 604800 ] >> $GITHUB_OUTPUT
-          monthly=$(git fetch origin monthly && git log monthly -n1 --format=%ct || echo 2592000)
-          echo monthly=$[ monthly - 2592000 ] >> $GITHUB_OUTPUT
+          behind=$(git rev-list --count origin/master...upstream/master)
+          weekly=$(git fetch origin weekly && git log origin/weekly -n1 --format=%ct || echo 604800)
+          monthly=$(git fetch origin monthly && git log origin/monthly -n1 --format=%ct || echo 2592000)
+          let weekly-=604800 monthly-=2592000
+          echo behind=$behind | tee -a $GITHUB_OUTPUT
+          echo weekly=$weekly | tee -a $GITHUB_OUTPUT
+          echo monthly=$monthly | tee -a $GITHUB_OUTPUT
           
       - name: Sync master
         if: steps.remotes.outputs.behind > 0
         run: |
-          git checkout master
+          git -c checkout.defaultRemote=origin checkout master
           git merge --ff-only upstream/master
-          git rebase master more-branches -v
+          git -c checkout.defaultRemote=origin checkout more-branches
+          git rebase master -v
           
       - name: Sync weekly
         if: steps.remotes.outputs.weekly >= 0
