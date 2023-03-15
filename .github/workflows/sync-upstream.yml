@@ -1,6 +1,7 @@
 name: "Sync Upstream"
 
 on:
+  workflow_dispatch:
   schedule:
   - cron: '0 0 * * *'
   
@@ -20,13 +21,19 @@ jobs:
           git remote add upstream 'https://github.com/NixOS/nixpkgs.git'
           git fetch upstream master nixpkgs-unstable
           git fetch origin master more-branches
+          
           behind=$(git rev-list --count origin/master...upstream/master)
-          weekly=$(git fetch origin weekly && git log origin/weekly -n1 --format=%ct || echo 604800)
-          monthly=$(git fetch origin monthly && git log origin/monthly -n1 --format=%ct || echo 2592000)
-          let weekly-=604800 monthly-=2592000
-          echo behind=$behind | tee -a $GITHUB_OUTPUT
-          echo weekly=$weekly | tee -a $GITHUB_OUTPUT
-          echo monthly=$monthly | tee -a $GITHUB_OUTPUT
+          echo behind=$behind | tee -a "$GITHUB_OUTPUT"
+          
+          latest=$(git log upstream/nixpkgs-unstable -n1 --format=%ct || echo 0)
+          
+          weekly=$(git fetch origin weekly && git log origin/weekly -n1 --format=%ct || echo 0)
+          weekly=$[ latest - weekly - 604800 ]
+          echo weekly=$weekly | tee -a "$GITHUB_OUTPUT"
+          
+          monthly=$(git fetch origin monthly && git log origin/monthly -n1 --format=%ct || echo 0)
+          monthly=$[ latest - monthly - 2592000 ]
+          echo monthly=$monthly | tee -a "$GITHUB_OUTPUT"
           
       - name: Sync master
         if: steps.remotes.outputs.behind > 0
@@ -42,7 +49,7 @@ jobs:
         
       - name: Sync monthly
         if: steps.remotes.outputs.monthly >= 0
-        run: git branch -vf weekly upstream/nixpkgs-unstable
+        run: git branch -vf monthly upstream/nixpkgs-unstable
     
       - name: Push changes
         run: git push --all origin
