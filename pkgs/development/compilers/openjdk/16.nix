@@ -1,5 +1,5 @@
 { stdenv, lib, fetchurl, fetchFromGitHub, bash, pkg-config, autoconf, cpio
-, file, which, unzip, zip, perl, cups, freetype, harfbuzz, alsa-lib, libjpeg, giflib
+, file, which, unzip, zip, perl, cups, freetype, alsa-lib, libjpeg, giflib
 , libpng, zlib, lcms2, libX11, libICE, libXrender, libXext, libXt, libXtst
 , libXi, libXinerama, libXcursor, libXrandr, fontconfig, openjdk16-bootstrap
 , setJavaClassPath
@@ -11,26 +11,30 @@
 let
   version = {
     feature = "16";
-    interim = "0";
-    build = "36";
+    interim = ".0.2-ga";
+    build = "1";
   };
+
+  # when building a headless jdk, also bootstrap it with a headless jdk
+  openjdk-bootstrap = openjdk16-bootstrap.override { gtkSupport = !headless; };
 
   openjdk = stdenv.mkDerivation {
     pname = "openjdk" + lib.optionalString headless "-headless";
-    version = "${version.feature}+${version.build}";
+    version = "${version.feature}${version.interim}+${version.build}";
 
     src = fetchFromGitHub {
       owner = "openjdk";
       repo = "jdk${version.feature}u";
-      rev = "jdk-${version.feature}+${version.build}";
-      sha256 = "165nr15dqfcxzsl5z95g4iklln4rlfkgdigdma576mx8813ldi44";
+      rev = "jdk-${version.feature}${version.interim}";
+      # rev = "jdk-${version.feature}${version.interim}+${version.build}";
+      sha256 = "sha256-/8XHNrf9joCCXMCyPncT54JhqlF+KBL7eAf8hUW/BxU=";
     };
 
     nativeBuildInputs = [ pkg-config autoconf unzip ];
     buildInputs = [
-      cpio file which zip perl zlib cups freetype harfbuzz alsa-lib libjpeg giflib
+      cpio file which zip perl zlib cups freetype alsa-lib libjpeg giflib
       libpng zlib lcms2 libX11 libICE libXrender libXext libXtst libXt libXtst
-      libXi libXinerama libXcursor libXrandr fontconfig openjdk16-bootstrap
+      libXi libXinerama libXcursor libXrandr fontconfig openjdk-bootstrap
     ] ++ lib.optionals (!headless && enableGnome2) [
       gtk3 gnome_vfs GConf glib
     ];
@@ -58,23 +62,26 @@ let
       patchShebangs --build configure
     '';
 
+    # JDK's build system attempts to specifically detect
+    # and special-case WSL, and we don't want it to do that,
+    # so pass the correct platform names explicitly
+    configurePlatforms = ["build" "host"];
+
     configureFlags = [
-      "--with-boot-jdk=${openjdk16-bootstrap.home}"
+      "--with-boot-jdk=${openjdk-bootstrap.home}"
       "--with-version-build=${version.build}"
       "--with-version-opt=nixos"
       "--with-version-pre="
       "--enable-unlimited-crypto"
       "--with-native-debug-symbols=internal"
       "--with-freetype=system"
-      "--with-harfbuzz=system"
       "--with-libjpeg=system"
       "--with-giflib=system"
       "--with-libpng=system"
       "--with-zlib=system"
       "--with-lcms=system"
       "--with-stdc++lib=dynamic"
-    ] ++ lib.optional stdenv.isx86_64 "--with-jvm-features=zgc"
-      ++ lib.optional headless "--enable-headless-only"
+    ] ++ lib.optional headless "--enable-headless-only"
       ++ lib.optional (!headless && enableJavaFX) "--with-import-modules=${openjfx}";
 
     separateDebugInfo = true;
@@ -94,6 +101,12 @@ let
     enableParallelBuilding = false;
 
     buildFlags = [ "all" ];
+
+    postBuild = ''
+      cd build/linux*
+      make images
+      cd -
+    '';
 
     installPhase = ''
       mkdir -p $out/lib
@@ -154,8 +167,9 @@ let
       done
     '';
 
-    disallowedReferences = [ openjdk16-bootstrap ];
+    disallowedReferences = [ openjdk-bootstrap ];
 
+    pos = builtins.unsafeGetAttrPos "feature" version;
     meta = import ./meta.nix lib version.feature;
 
     passthru = {

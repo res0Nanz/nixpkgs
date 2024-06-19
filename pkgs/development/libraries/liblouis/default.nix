@@ -13,7 +13,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "liblouis";
-  version = "3.25.0";
+  version = "3.30.0";
 
   outputs = [ "out" "dev" "info" "doc" ]
     # configure: WARNING: cannot generate manual pages while cross compiling
@@ -23,9 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "liblouis";
     repo = "liblouis";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-On5PbBgvDAeD41oGb5EKBtKvi/VXnLsVrTMX7tcwnq4=";
+    hash = "sha256-VeDthGET1PcKXzXkztJCcN6yXgf51bcIyawuyUurwBs=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -39,7 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     # lou_checkYaml
     libyaml
-    # maketable.d
+  ];
+
+  nativeCheckInputs = [
     perl
   ];
 

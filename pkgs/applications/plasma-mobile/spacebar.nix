@@ -1,7 +1,5 @@
 { lib
 , mkDerivation
-, gcc12Stdenv
-, srcs
 
 , cmake
 , extra-cmake-modules
@@ -17,17 +15,14 @@
 , knotifications
 , kpeople
 , libphonenumber
-, libqofono
 , modemmanager-qt
 , protobuf
 , qcoro
 , qtquickcontrols2
 }:
 
-# Workaround for AArch64 still using GCC9.
-gcc12Stdenv.mkDerivation rec {
+mkDerivation {
   pname = "spacebar";
-  inherit (srcs.spacebar) version src;
 
   nativeBuildInputs = [
     cmake
@@ -54,6 +49,7 @@ gcc12Stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "SMS application for Plasma Mobile";
+    mainProgram = "spacebar";
     homepage = "https://invent.kde.org/plasma-mobile/spacebar";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ samueldr ];

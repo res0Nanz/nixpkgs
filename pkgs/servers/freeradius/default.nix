@@ -1,7 +1,6 @@
 { lib
 , stdenv
 , fetchurl
-, fetchpatch
 , autoreconfHook
 , bsd-finger
 , perl
@@ -24,11 +23,11 @@ assert withRest -> withJson;
 
 stdenv.mkDerivation rec {
   pname = "freeradius";
-  version = "3.2.2";
+  version = "3.2.4";
 
   src = fetchurl {
     url = "ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-${version}.tar.gz";
-    hash = "sha256-FEv37X7fIcrL0HUdQWAI+s4VZwI7ODKxGm2wejsH2cA=";
+    hash = "sha256-/dR2lJ88mRwZ8U73GZtSLlIEiW0TnGmUY4Hc6biSKUE=";
   };
 
   nativeBuildInputs = [ autoreconfHook ];
@@ -75,8 +74,8 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://freeradius.org/";
-    description = "A modular, high performance free RADIUS suite";
-    license = licenses.gpl2;
+    description = "Modular, high performance free RADIUS suite";
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ sheenobu willibutz lheckemann ];
     platforms = with platforms; linux;
   };

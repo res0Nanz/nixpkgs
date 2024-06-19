@@ -6,7 +6,8 @@
 , intltool
 , shared-mime-info
 , gtk3
-, wrapGAppsHook
+, wrapGAppsHook3
+, libarchive
 , libxml2
 , xapp
 , meson
@@ -16,7 +17,7 @@
 , poppler
 , libspectre
 , libgxps
-, webkitgtk
+, webkitgtk_4_1
 , nodePackages
 , ninja
 , gsettings-desktop-schemas
@@ -26,18 +27,18 @@
 
 stdenv.mkDerivation rec {
   pname = "xreader";
-  version = "3.6.3";
+  version = "4.2.0";
 
   src = fetchFromGitHub {
     owner = "linuxmint";
     repo = pname;
     rev = version;
-    sha256 = "sha256-KuCcOnhM8AzKC8hfBpdcnC/ubDVsElKMZuxEnTcJLn0=";
+    sha256 = "sha256-MWSAyXQcE8cDdzJISFV7UHheHX+7zF1Ula+LGicvUPM=";
   };
 
   nativeBuildInputs = [
     shared-mime-info
-    wrapGAppsHook
+    wrapGAppsHook3
     meson
     ninja
     pkg-config
@@ -54,18 +55,19 @@ stdenv.mkDerivation rec {
     gtk3
     xapp
     cairo
+    libarchive
     libxml2
     libsecret
     poppler
     libspectre
     libgxps
-    webkitgtk
+    webkitgtk_4_1
     nodePackages.mathjax
     djvulibre
   ];
 
   meta = with lib; {
-    description = "A document viewer capable of displaying multiple and single page
+    description = "Document viewer capable of displaying multiple and single page
 document formats like PDF and Postscript";
     homepage = "https://github.com/linuxmint/xreader";
     license = licenses.gpl2Plus;

@@ -15,12 +15,14 @@ stdenv.mkDerivation rec {
   stripDebugList = [ "bin" ];
   dontPatchELF = true;
 
+  enableParallelBuilding = true;
+
   passthru = {
     incdir = "/avr/include";
   };
 
   meta = with lib; {
-    description = "a C runtime library for AVR microcontrollers";
+    description = "C runtime library for AVR microcontrollers";
     homepage = "https://github.com/avrdudes/avr-libc";
     license = licenses.bsd3;
     platforms = [ "avr-none" ];

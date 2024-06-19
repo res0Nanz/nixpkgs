@@ -11,16 +11,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "cargo-generate";
-  version = "0.18.1";
+  version = "0.21.0";
 
   src = fetchFromGitHub {
     owner = "cargo-generate";
     repo = "cargo-generate";
     rev = "v${version}";
-    sha256 = "sha256-0o7kemIxKCf+oNCl2ryKT02w49LQUuKaFIQUDt5mIw4=";
+    sha256 = "sha256-utJYgbmCLi7rWKsRDZqJDCtEbVijAjnMqpYoALKO+Ho=";
   };
 
-  cargoSha256 = "sha256-DnPf75MEIbX4UQ6XeGLRE4giu+DxgWWmKJY34jrPwpc=";
+  cargoHash = "sha256-9rgdpoXNKaw850EnK6jDwT+jba/B/66PqQackx2knuk=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -48,11 +48,16 @@ rustPlatform.buildRustPackage rec {
     "--skip=git::utils::should_canonicalize"
   ];
 
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   meta = with lib; {
-    description = "A tool to generaet a new Rust project by leveraging a pre-existing git repository as a template";
+    description = "Tool to generate a new Rust project by leveraging a pre-existing git repository as a template";
+    mainProgram = "cargo-generate";
     homepage = "https://github.com/cargo-generate/cargo-generate";
     changelog = "https://github.com/cargo-generate/cargo-generate/blob/v${version}/CHANGELOG.md";
     license = with licenses; [ asl20 /* or */ mit ];
-    maintainers = with maintainers; [ figsoda turbomack ];
+    maintainers = with maintainers; [ figsoda turbomack matthiasbeyer ];
   };
 }

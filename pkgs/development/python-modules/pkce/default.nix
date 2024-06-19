@@ -1,18 +1,20 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pytestCheckHook
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pkce";
   version = "1.0.3";
+  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RomeoDespres";
     repo = pname;
     rev = version;
-    sha256 = "sha256-dOHCu0pDXk9LM4Yobaz8GAfVpBd8rXlty+Wfhx+WPME=";
+    hash = "sha256-dOHCu0pDXk9LM4Yobaz8GAfVpBd8rXlty+Wfhx+WPME=";
   };
 
   nativeCheckInputs = [ pytestCheckHook ];

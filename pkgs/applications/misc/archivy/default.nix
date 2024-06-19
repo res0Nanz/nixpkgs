@@ -1,6 +1,6 @@
 { lib
-, stdenv
 , python3
+, fetchPypi
 }:
 
 let
@@ -9,7 +9,8 @@ let
       wtforms = super.wtforms.overridePythonAttrs (oldAttrs: rec {
         version = "2.3.1";
 
-        src = oldAttrs.src.override {
+        src = fetchPypi {
+          pname = "WTForms";
           inherit version;
           sha256 = "sha256-hhoTs65SHWcA2sOydxlwvTVKY7pwQ+zDqCtSiFlqGXI=";
         };

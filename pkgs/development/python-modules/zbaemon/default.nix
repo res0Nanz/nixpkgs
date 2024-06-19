@@ -1,7 +1,8 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, zconfig
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  zconfig,
 }:
 
 buildPythonPackage rec {
@@ -10,7 +11,7 @@ buildPythonPackage rec {
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-SCHjvbRzh88eklWwREusQ3z3KqC1nRQHuTLjH9QyPvw=";
+    hash = "sha256-SCHjvbRzh88eklWwREusQ3z3KqC1nRQHuTLjH9QyPvw=";
   };
 
   propagatedBuildInputs = [ zconfig ];
@@ -19,10 +20,9 @@ buildPythonPackage rec {
   doCheck = false;
 
   meta = with lib; {
-    description = "A daemon process control library and tools for Unix-based systems";
+    description = "Daemon process control library and tools for Unix-based systems";
     homepage = "https://pypi.python.org/pypi/zdaemon";
     license = licenses.zpl20;
     maintainers = with maintainers; [ goibhniu ];
   };
-
 }

@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   pname = "charls";
-  version = "2.4.1";
+  version = "2.4.2";
 
   src = fetchFromGitHub {
     owner = "team-charls";
     repo = pname;
     rev = "refs/tags/${version}";
-    hash = "sha256-l0qcJeQfRqpwR7vNmYZx00kGlPkK7nEYuslydjxj7ss=";
+    hash = "sha256-c1wrk6JLcAH7TFPwjARlggaKXrAsLWyUQF/3WHlqoqg=";
   };
 
   postPatch = ''
@@ -27,7 +27,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/team-charls/charls";
-    description = "A JPEG-LS library implementation in C++";
+    description = "JPEG-LS library implementation in C++";
     maintainers = with maintainers; [ bcdarwin ];
     license = licenses.bsd3;
     platforms = platforms.unix;

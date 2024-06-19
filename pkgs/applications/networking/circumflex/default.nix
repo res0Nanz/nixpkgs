@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "circumflex";
-  version = "2.8.1";
+  version = "3.6";
 
   src = fetchFromGitHub {
     owner = "bensadeh";
     repo = "circumflex";
     rev = version;
-    hash = "sha256-hFhK1/ck37lfZJ2wpk1MGCfYEANhh8qzTb8m1t7EoBo=";
+    hash = "sha256-FzJUmF2X4Iyf83cIEa8b8EFCcWUyYEZBVyvXuhiaaWM=";
   };
 
-  vendorHash = "sha256-rwqY6illp5+h/oHOnVg6QfZ6tRFJOamwqJxQx/zlpyI=";
+  vendorHash = "sha256-x/NgcodS/hirXJHxBHeUP9MgOBHq1yQWHprMrlpqsas=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -21,9 +21,9 @@ buildGoModule rec {
   '';
 
   meta = with lib; {
-    description = "A command line tool for browsing Hacker News in your terminal";
+    description = "Command line tool for browsing Hacker News in your terminal";
     homepage = "https://github.com/bensadeh/circumflex";
-    license = licenses.agpl3;
+    license = licenses.agpl3Only;
     maintainers = with maintainers; [ mktip ];
     mainProgram = "clx";
   };

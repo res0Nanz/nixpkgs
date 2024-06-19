@@ -1,7 +1,6 @@
 { lib
 , stdenv
 , fetchurl
-, fetchpatch2
 , meson
 , ninja
 , pkg-config
@@ -25,15 +24,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtksourceview";
-  version = "5.6.2";
+  version = "5.12.1";
 
   outputs = [ "out" "dev" "devdoc" ];
 
-  src = let
-    inherit (finalAttrs) pname version;
-  in fetchurl {
-    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "HxRsFW8TWmBJnZeeNXfJm24VoRFEV2er5iGbs0xUXHc=";
+  src = fetchurl {
+    url = "mirror://gnome/sources/gtksourceview/${lib.versions.majorMinor finalAttrs.version}/gtksourceview-${finalAttrs.version}.tar.xz";
+    hash = "sha256-hMgqrZhcWq2ufOp4BJBKdjQeyCsmjUZZTBpHjzm0LB8=";
   };
 
   patches = [
@@ -41,13 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     # but not from its own datadr (it assumes it will be in XDG_DATA_DIRS).
     # Since this is not generally true with Nix, let’s add $out/share unconditionally.
     ./4.x-nix_share_path.patch
-
-    # Add Nix syntax highlighting.
-    # https://gitlab.gnome.org/GNOME/gtksourceview/-/merge_requests/303
-    (fetchpatch2 {
-      url = "https://gitlab.gnome.org/GNOME/gtksourceview/-/commit/2cc7fd079f9fc8b593c727c68a2c783c82299562.patch";
-      sha256 = "bTYWjEDpdbnUxcYNKl2YtSLfYlMfcbQSSYQjhixOGS8=";
-    })
   ];
 
   nativeBuildInputs = [
@@ -59,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     gobject-introspection
     vala
     gi-docgen
+    gtk4 # for gtk4-update-icon-cache checked during configure
   ];
 
   buildInputs = [
@@ -82,15 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [
-    "-Dgtk_doc=true"
+    "-Ddocumentation=true"
   ];
-
-  postPatch = ''
-    # https://gitlab.gnome.org/GNOME/gtksourceview/-/merge_requests/295
-    # build: drop unnecessary vapigen check
-    substituteInPlace meson.build \
-      --replace "if generate_vapi" "if false"
-  '';
 
   doCheck = stdenv.isLinux;
 
@@ -124,10 +108,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     description = "Source code editing widget for GTK";
-    homepage = "https://wiki.gnome.org/Projects/GtkSourceView";
+    homepage = "https://gitlab.gnome.org/GNOME/gtksourceview";
     pkgConfigModules = [ "gtksourceview-5" ];
     platforms = platforms.unix;
     license = licenses.lgpl21Plus;
     maintainers = teams.gnome.members;
+    # https://hydra.nixos.org/build/258191535/nixlog/1
+    broken = stdenv.isDarwin && stdenv.isx86_64;
   };
 })

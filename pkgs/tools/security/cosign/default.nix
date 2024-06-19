@@ -13,13 +13,13 @@
 }:
 buildGoModule rec {
   pname = "cosign";
-  version = "2.0.0";
+  version = "2.2.4";
 
   src = fetchFromGitHub {
     owner = "sigstore";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-919oxYi4e56EhSBN0FdcEZBA430owaDnKHkgTneScXw=";
+    hash = "sha256-csFFB1VYwd009fL4QHDK9jmCmwFJ45CVutLVzluG1NU=";
   };
 
   buildInputs =
@@ -28,7 +28,7 @@ buildGoModule rec {
 
   nativeBuildInputs = [ pkg-config installShellFiles ];
 
-  vendorSha256 = "sha256-DtFywktiGHlsdOFVpKUtKLYXJYwQYy1VISfUYVXlOG8=";
+  vendorHash = "sha256-LYdbHpucF/lUzMu0m5y0Gt3A/8ISUs9oLM79mTF/REM=";
 
   subPackages = [
     "cmd/cosign"
@@ -52,6 +52,7 @@ buildGoModule rec {
     rm pkg/cosign/ctlog_test.go # Require network access
     rm pkg/cosign/tlog_test.go # Require network access
     rm cmd/cosign/cli/verify/verify_blob_attestation_test.go # Require network access
+    rm cmd/cosign/cli/verify/verify_blob_test.go # Require network access
   '';
 
   postInstall = ''
@@ -71,6 +72,7 @@ buildGoModule rec {
     homepage = "https://github.com/sigstore/cosign";
     changelog = "https://github.com/sigstore/cosign/releases/tag/v${version}";
     description = "Container Signing CLI with support for ephemeral keys and Sigstore signing";
+    mainProgram = "cosign";
     license = licenses.asl20;
     maintainers = with maintainers; [ lesuisse jk developer-guy ];
   };

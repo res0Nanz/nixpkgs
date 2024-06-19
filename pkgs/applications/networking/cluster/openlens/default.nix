@@ -1,12 +1,12 @@
-{ lib, fetchurl, appimageTools, wrapGAppsHook }:
+{ lib, fetchurl, appimageTools }:
 
 let
   pname = "openlens";
-  version = "6.4.5";
+  version = "6.5.2-366";
 
   src = fetchurl {
     url = "https://github.com/MuhammedKalkan/OpenLens/releases/download/v${version}/OpenLens-${version}.x86_64.AppImage";
-    sha256 = "sha256-Lwl4unhXSyYCEImiPncAnmIQt26CD4horsREMyi6nuA=";
+    sha256 = "sha256-ZAltAS/U/xh4kCT7vQ+NHAzWV7z0uE5GMQICHKSdj8k=";
   };
 
   appimageContents = appimageTools.extractType2 {
@@ -19,8 +19,6 @@ appimageTools.wrapType2 {
   unshareIpc = false;
 
   extraInstallCommands = ''
-    mv $out/bin/${pname}-${version} $out/bin/${pname}
-
     install -m 444 -D ${appimageContents}/open-lens.desktop $out/share/applications/${pname}.desktop
     install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/open-lens.png \
        $out/share/icons/hicolor/512x512/apps/${pname}.png
@@ -31,10 +29,11 @@ appimageTools.wrapType2 {
   '';
 
   meta = with lib; {
-    description = "The Kubernetes IDE";
+    description = "Kubernetes IDE";
     homepage = "https://github.com/MuhammedKalkan/OpenLens";
     license = licenses.mit;
     maintainers = with maintainers; [ benwbooth sebtm ];
+    mainProgram = "openlens";
     platforms = [ "x86_64-linux" ];
   };
 }

@@ -7,16 +7,16 @@
 
 buildGoModule rec {
   pname = "fq";
-  version = "0.4.0";
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "wader";
     repo = "fq";
     rev = "v${version}";
-    hash = "sha256-2Sif6LUv99u/R4SrvsJoJ08aS5G/o34IC+4qAoRvX/g=";
+    hash = "sha256-C9YvAHzpNwOVbFWxmdT5BUwsLug7k6ZLYboYJTgp82I=";
   };
 
-  vendorHash = "sha256-8YJ52stnRHyTfiEHVvUgzLMd14WHI5ZeNAPk77oXSlA=";
+  vendorHash = "sha256-liNRrmcTbN9mLWvgcEFZbgBPAHFGCF/KMV6KwRBWgoU=";
 
   ldflags = [
     "-s"
@@ -30,6 +30,7 @@ buildGoModule rec {
 
   meta = with lib; {
     description = "jq for binary formats";
+    mainProgram = "fq";
     homepage = "https://github.com/wader/fq";
     license = licenses.mit;
     maintainers = with maintainers; [ siraben ];

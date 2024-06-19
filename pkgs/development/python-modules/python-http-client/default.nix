@@ -1,9 +1,10 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, mock
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  mock,
+  pytestCheckHook,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
@@ -17,7 +18,7 @@ buildPythonPackage rec {
     owner = "sendgrid";
     repo = "python-http-client";
     rev = version;
-    sha256 = "sha256-8Qs5Jw0LMV2UucLnlFKJQ2PUhYaQx6uJdIV/4gaPH3w=";
+    hash = "sha256-8Qs5Jw0LMV2UucLnlFKJQ2PUhYaQx6uJdIV/4gaPH3w=";
   };
 
   nativeCheckInputs = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     "test_daterange"
   ];
 
-  pythonImportsCheck = [
-    "python_http_client"
-  ];
+  pythonImportsCheck = [ "python_http_client" ];
 
   meta = with lib; {
     description = "Python HTTP library to call APIs";

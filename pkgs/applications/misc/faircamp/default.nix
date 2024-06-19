@@ -1,6 +1,7 @@
 { lib
+, stdenv
 , rustPlatform
-, fetchgit
+, fetchFromGitea
 , makeWrapper
 , pkg-config
 , glib
@@ -8,22 +9,31 @@
 , vips
 , ffmpeg
 , callPackage
-, unstableGitUpdater
+, darwin
+, testers
+, faircamp
 }:
 
-rustPlatform.buildRustPackage {
+rustPlatform.buildRustPackage rec {
   pname = "faircamp";
-  version = "unstable-2022-12-28";
+  version = "0.14.0";
 
-  # TODO when switching to a stable release, use fetchFromGitea and add a
-  # version test. Meanwhile, fetchgit is used to make unstableGitUpdater work.
-  src = fetchgit {
-    url = "https://codeberg.org/simonrepp/faircamp.git";
-    rev = "c77fd779cea6daecbac9a9beea65c1dc1ac56bc4";
-    sha256 = "sha256-Tl3T/IoBIhYCNDEYT6cV1UyksDkoEDydBjYM9yzT4VQ=";
+  src = fetchFromGitea {
+    domain = "codeberg.org";
+    owner = "simonrepp";
+    repo = "faircamp";
+    rev = version;
+    hash = "sha256-gHlm5ZQ5u+gOSBERlg6iYJxGTfs/+L4y2TY+ZOsVYh8=";
   };
 
-  cargoHash = "sha256-20rtE8+LLDz97yvk0gKoUielsGZXEEOu2pfShf2WvHA=";
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+    outputHashes = {
+      "enolib-0.4.2" = "sha256-FJuWKcwjoi/wKfTzxghobNWblhnKRdUvHOejhpCF7kY=";
+    };
+  };
+
+  buildFeatures = [ "libvips" ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -34,6 +44,8 @@ rustPlatform.buildRustPackage {
     glib
     libopus
     vips
+  ] ++ lib.optionals stdenv.isDarwin [
+    darwin.apple_sdk.frameworks.CoreServices
   ];
 
   postInstall = ''
@@ -41,12 +53,14 @@ rustPlatform.buildRustPackage {
       --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
   '';
 
-  passthru.tests.wav = callPackage ./test-wav.nix { };
-
-  passthru.updateScript = unstableGitUpdater { };
+  passthru.tests = {
+    wav = callPackage ./test-wav.nix { };
+    version = testers.testVersion { package = faircamp; };
+  };
 
   meta = with lib; {
-    description = "A self-hostable, statically generated bandcamp alternative";
+    description = "Self-hostable, statically generated bandcamp alternative";
+    mainProgram = "faircamp";
     longDescription = ''
       Faircamp takes a directory on your disk - your Catalog - and from it
       produces a fancy-looking (and technically simple and completely static)
@@ -59,7 +73,7 @@ rustPlatform.buildRustPackage {
       website for you automatically, otherwise you can use FTP or whichever
       means you prefer to do that manually.
     '';
-    homepage = "https://codeberg.org/simonrepp/faircamp";
+    homepage = "https://simonrepp.com/faircamp/";
     license = licenses.gpl3Plus;
     maintainers = with maintainers; [ fgaz ];
     platforms = platforms.all;

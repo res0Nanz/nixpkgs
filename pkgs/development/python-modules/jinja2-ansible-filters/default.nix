@@ -1,15 +1,19 @@
-{ lib, buildPythonPackage, fetchPypi
-, jinja2
-, pyyaml
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  jinja2,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "jinja2-ansible-filters";
   version = "1.3.2";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-B8EM9E1wc/TwEQLKEtmi3DG0HUfkxh7ZLvam0mabNWs=";
+    hash = "sha256-B8EM9E1wc/TwEQLKEtmi3DG0HUfkxh7ZLvam0mabNWs=";
   };
 
   propagatedBuildInputs = [

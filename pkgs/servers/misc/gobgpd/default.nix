@@ -5,16 +5,16 @@
 
 buildGoModule rec {
   pname = "gobgpd";
-  version = "3.12.0";
+  version = "3.27.0";
 
   src = fetchFromGitHub {
     owner = "osrg";
     repo = "gobgp";
     rev = "refs/tags/v${version}";
-    hash = "sha256-keev3DZ3xN5UARuYKfSdox0KKBjrM5RoMD273Aw0AGY=";
+    hash = "sha256-RxBAnElmQkrkMuIC0UpneJXN1OiPhaTPm/tYvc8QSg8=";
   };
 
-  vendorHash = "sha256-5lRW9gWQZRRqZoVB16kI1VEnr0XsiPtLUuioK/0f8w0=";
+  vendorHash = "sha256-wrgRQwisOHAhvRbvGXMW5VWkQuEifCwCo3usuxLie4A=";
 
   postConfigure = ''
     export CGO_ENABLED=0
@@ -32,6 +32,7 @@ buildGoModule rec {
 
   meta = with lib; {
     description = "BGP implemented in Go";
+    mainProgram = "gobgpd";
     homepage = "https://osrg.github.io/gobgp/";
     changelog = "https://github.com/osrg/gobgp/releases/tag/v${version}";
     license = licenses.asl20;

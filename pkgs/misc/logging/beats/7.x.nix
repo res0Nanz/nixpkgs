@@ -1,6 +1,6 @@
 { lib, fetchFromGitHub, elk7Version, buildGoModule, libpcap, nixosTests, systemd, config }:
 
-let beat = package: extraArgs: buildGoModule (rec {
+let beat = package: extraArgs: buildGoModule (lib.attrsets.recursiveUpdate (rec {
   pname = package;
   version = elk7Version;
 
@@ -8,10 +8,10 @@ let beat = package: extraArgs: buildGoModule (rec {
     owner = "elastic";
     repo = "beats";
     rev = "v${version}";
-    sha256 = "sha256-DE7XpzVBu9qL7fMXXYRYLdVXrr0WB0IL0KAG0Zc3TVo=";
+    hash = "sha256-0qwWHRIDLlnaPOCRmiiFGg+/jdanWuQtggM2QSaMR1o=";
   };
 
-  vendorSha256 = "sha256-TQrXUcLv7rFo3PP3bVx0wEC1WbtkJDsCm+/izHAxqBc=";
+  vendorHash = "sha256-rwCCpptppkpvwQWUtqTjBUumP8GSpPHBTCaj0nYVQv8=";
 
   subPackages = [ package ];
 
@@ -21,9 +21,10 @@ let beat = package: extraArgs: buildGoModule (rec {
     maintainers = with maintainers; [ fadenb basvandijk dfithian ];
     platforms = platforms.linux;
   };
-} // extraArgs);
+}) extraArgs);
 in
 rec {
+  auditbeat7 = beat "auditbeat" { meta.description = "Lightweight shipper for audit data"; };
   filebeat7 = beat "filebeat" {
     meta.description = "Lightweight shipper for logfiles";
     buildInputs = [ systemd ];

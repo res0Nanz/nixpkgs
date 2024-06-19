@@ -1,12 +1,12 @@
-{ lib, python3Packages, patatt }:
+{ lib, python3Packages, fetchPypi, patatt }:
 
 python3Packages.buildPythonApplication rec {
   pname = "b4";
-  version = "0.12.1";
+  version = "0.13.0";
 
-  src = python3Packages.fetchPypi {
+  src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-BFvuxwcHG2KCv5LAeus50IDJ2mBCyixg3ETq9UzPmSA=";
+    hash = "sha256-gsok5aDi5oYJPMXVv3MFAehyKZ5hHBtvwf7z6Ut4dBQ=";
   };
 
   # tests make dns requests and fails
@@ -23,7 +23,8 @@ python3Packages.buildPythonApplication rec {
   meta = with lib; {
     homepage = "https://git.kernel.org/pub/scm/utils/b4/b4.git/about";
     license = licenses.gpl2Only;
-    description = "A helper utility to work with patches made available via a public-inbox archive";
-    maintainers = with maintainers; [ jb55 qyliss ];
+    description = "Helper utility to work with patches made available via a public-inbox archive";
+    mainProgram = "b4";
+    maintainers = with maintainers; [ jb55 qyliss mfrw ];
   };
 }

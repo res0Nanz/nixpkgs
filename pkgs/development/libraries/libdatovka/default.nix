@@ -15,11 +15,11 @@
 
 stdenv.mkDerivation rec {
   pname = "libdatovka";
-  version = "0.3.0";
+  version = "0.6.2";
 
   src = fetchurl {
     url = "https://gitlab.nic.cz/datovka/libdatovka/-/archive/v${version}/libdatovka-v${version}.tar.gz";
-    sha256 = "sha256-aG7U8jP3pvOeFDetYVOx+cE78ys0uSkKNjSgB09ste8=";
+    sha256 = "sha256-4JFPlEpSFv5t3p/NGq0cfn+neJj2M0BNWWd6nlCjHE0=";
   };
 
   patches = [
@@ -30,7 +30,8 @@ stdenv.mkDerivation rec {
     "--with-docbook-xsl-stylesheets=${docbook_xsl}/xml/xsl/docbook"
   ];
 
-  buildInputs = [ pkg-config autoreconfHook expat gpgme libgcrypt libxml2 libxslt gnutls curl docbook_xsl ];
+  nativeBuildInputs = [ pkg-config autoreconfHook ];
+  buildInputs = [ expat gpgme libgcrypt libxml2 libxslt gnutls curl docbook_xsl ];
 
   meta = with lib; {
     description = "Client library for accessing SOAP services of Czech government-provided Databox infomation system";

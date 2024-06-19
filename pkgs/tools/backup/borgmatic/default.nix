@@ -1,15 +1,35 @@
-{ borgbackup, coreutils, lib, python3Packages, systemd, installShellFiles, borgmatic, testers }:
+{ lib
+, stdenv
+, borgbackup
+, coreutils
+, python3Packages
+, fetchpatch
+, fetchPypi
+, systemd
+, enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd
+, installShellFiles
+, borgmatic
+, testers
+}:
 
 python3Packages.buildPythonApplication rec {
   pname = "borgmatic";
-  version = "1.7.8";
+  version = "1.8.11";
 
-  src = python3Packages.fetchPypi {
+  src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-+lYyCPKgaWZPUkIGjgmBES6vg1ZbgZ5b6WKmpqAcyhM=";
+    sha256 = "sha256-Sgj15etVx8nnk0AZv+GzWscSqfqdC7+1wBE6gF/0aL0=";
   };
 
-  nativeCheckInputs = with python3Packages; [ flexmock pytestCheckHook pytest-cov ];
+  patches = [
+    (fetchpatch {
+      name = "prevent-network-access-in-tests.patch";
+      url = "https://projects.torsion.org/borgmatic-collective/borgmatic/pulls/869.patch";
+      hash = "sha256-jOo3LjgvJtyTaRKZX1wfnKNdw975hVekBkKfK4mJFAc=";
+    })
+  ];
+
+  nativeCheckInputs = with python3Packages; [ flexmock pytestCheckHook pytest-cov ] ++ passthru.optional-dependencies.apprise;
 
   # - test_borgmatic_version_matches_news_version
   # The file NEWS not available on the pypi source, and this test is useless
@@ -23,15 +43,20 @@ python3Packages.buildPythonApplication rec {
     borgbackup
     colorama
     jsonschema
+    packaging
     ruamel-yaml
     requests
     setuptools
   ];
 
+  passthru.optional-dependencies = {
+    apprise = with python3Packages; [ apprise ];
+  };
+
   postInstall = ''
     installShellCompletion --cmd borgmatic \
       --bash <($out/bin/borgmatic --bash-completion)
-
+  '' + lib.optionalString enableSystemd ''
     mkdir -p $out/lib/systemd/system
     cp sample/systemd/borgmatic.timer $out/lib/systemd/system/
     # there is another "sleep", so choose the one with the space after it
@@ -45,11 +70,13 @@ python3Packages.buildPythonApplication rec {
 
   passthru.tests.version = testers.testVersion { package = borgmatic; };
 
+  __darwinAllowLocalNetworking = true;
+
   meta = with lib; {
     description = "Simple, configuration-driven backup software for servers and workstations";
     homepage = "https://torsion.org/borgmatic/";
     license = licenses.gpl3Plus;
-    platforms = platforms.linux;
+    platforms = platforms.all;
     maintainers = with maintainers; [ imlonghao ];
   };
 }

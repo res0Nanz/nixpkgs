@@ -17,7 +17,7 @@
 , libev
 , libgcrypt
 , libinjection
-, libmicrohttpd_0_9_69
+, libmicrohttpd
 , libuuid
 , lz4
 , nlohmann_json
@@ -25,20 +25,20 @@
 , pcre
 , perl
 , python3
-, re2
+, prometheus-cpp
 , zlib
 , texinfo
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "proxysql";
-  version = "2.5.0";
+  version = "2.6.0";
 
   src = fetchFromGitHub {
     owner = "sysown";
-    repo = pname;
-    rev = version;
-    hash = "sha256-psQzKycavS9xr24wGiRkr255IXW79AoG9fUEBkvPMZk=";
+    repo = "proxysql";
+    rev = finalAttrs.version;
+    hash = "sha256-vFPTBSp5DPNRuhtSD34ah2074almS+jiYxBE1L9Pz6g=";
   };
 
   patches = [
@@ -68,7 +68,7 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  GIT_VERSION = version;
+  GIT_VERSION = finalAttrs.version;
 
   dontConfigure = true;
 
@@ -111,16 +111,16 @@ stdenv.mkDerivation rec {
           { f = "libdaemon"; p = libdaemon; }
           { f = "libev"; p = libev; }
           { f = "libinjection"; p = libinjection; }
-          { f = "libmicrohttpd"; p = libmicrohttpd_0_9_69; }
+          { f = "libmicrohttpd"; p = libmicrohttpd; }
           { f = "libssl"; p = openssl; }
           { f = "lz4"; p = lz4; }
           { f = "pcre"; p = pcre; }
-          { f = "re2"; p = re2; }
+          { f = "prometheus-cpp"; p = prometheus-cpp; }
         ]
       )}
 
     pushd libhttpserver
-    tar xf libhttpserver-0.18.1.tar.gz
+    tar xf libhttpserver-*.tar.gz
     sed -i s_/bin/pwd_${coreutils}/bin/pwd_g libhttpserver/configure.ac
     popd
 
@@ -129,9 +129,8 @@ stdenv.mkDerivation rec {
     ln -s ${nlohmann_json.src}/single_include/nlohmann/json.hpp .
     popd
 
-    pushd prometheus-cpp
-    tar xf v0.9.0.tar.gz
-    replace_dep prometheus-cpp/3rdparty "${civetweb.src}" civetweb
+    pushd prometheus-cpp/prometheus-cpp/3rdparty
+    replace_dep . "${civetweb.src}" civetweb
     popd
 
     sed -i s_/usr/bin/env_${coreutils}/bin/env_g libssl/openssl/config
@@ -148,6 +147,10 @@ stdenv.mkDerivation rec {
     autoreconf
     popd
 
+    pushd pcre/pcre
+    autoreconf
+    popd
+
     popd
     patchShebangs .
   '';
@@ -161,10 +164,12 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    homepage = "https://proxysql.com/";
     broken = stdenv.isDarwin;
     description = "High-performance MySQL proxy";
+    mainProgram = "proxysql";
+    homepage = "https://proxysql.com/";
     license = with licenses; [ gpl3Only ];
-    maintainers = with maintainers; [ ajs124 ];
+    maintainers = teams.helsinki-systems.members;
+    platforms = platforms.unix;
   };
-}
+})

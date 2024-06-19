@@ -28,7 +28,7 @@ NixOS modules:
 ```nix
 { config, pkgs, ... }:
 
-{ option definitions
+{ # option definitions
 }
 ```
 
@@ -37,21 +37,21 @@ options, but does not declare any. The structure of full NixOS modules
 is shown in [Example: Structure of NixOS Modules](#ex-module-syntax).
 
 ::: {#ex-module-syntax .example}
-**Example: Structure of NixOS Modules**
+### Structure of NixOS Modules
 ```nix
 { config, pkgs, ... }:
 
 {
   imports =
-    [ paths of other modules
+    [ # paths of other modules
     ];
 
   options = {
-    option declarations
+    # option declarations
   };
 
   config = {
-    option definitions
+    # option definitions
   };
 }
 ```
@@ -100,13 +100,12 @@ Exec directives](#exec-escaping-example) for an example. When using these
 functions system environment substitution should *not* be disabled explicitly.
 
 ::: {#locate-example .example}
-**Example: NixOS Module for the "locate" Service**
+### NixOS Module for the "locate" Service
 ```nix
 { config, lib, pkgs, ... }:
 
-with lib;
-
 let
+  inherit (lib) concatStringsSep mkIf mkOption optionalString types;
   cfg = config.services.locate;
 in {
   options.services.locate = {
@@ -161,11 +160,9 @@ in {
 :::
 
 ::: {#exec-escaping-example .example}
-**Example: Escaping in Exec directives**
+### Escaping in Exec directives
 ```nix
-{ config, lib, pkgs, utils, ... }:
-
-with lib;
+{ config, pkgs, utils, ... }:
 
 let
   cfg = config.services.echo;

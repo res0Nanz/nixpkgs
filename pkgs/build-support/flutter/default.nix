@@ -1,284 +1,208 @@
-{ flutter
-, lib
-, llvmPackages_13
-, cmake
-, ninja
-, pkg-config
-, wrapGAppsHook
-, autoPatchelfHook
-, util-linux
-, libselinux
-, libsepol
-, libthai
-, libdatrie
-, libxkbcommon
-, at-spi2-core
-, libsecret
-, jsoncpp
-, xorg
-, dbus
-, gtk3
-, glib
-, pcre
-, libepoxy
-, stdenvNoCC
+{ lib
+, callPackage
+, runCommand
+, makeWrapper
+, wrapGAppsHook3
+, buildDartApplication
 , cacert
-, git
-, dart
-, nukeReferences
-, bash
-, curl
-, unzip
-, which
-, xz
+, glib
+, flutter
+, pkg-config
+, jq
+, yq
 }:
 
 # absolutely no mac support for now
 
-args:
+{ pubGetScript ? null
+, flutterBuildFlags ? [ ]
+, targetFlutterPlatform ? "linux"
+, extraWrapProgramArgs ? ""
+, flutterMode ? null
+, ...
+}@args:
+
 let
-  pl = n: "##FLUTTER_${n}_PLACEHOLDER_MARKER##";
-  placeholder_deps = pl "DEPS";
-  placeholder_flutter = pl "FLUTTER";
-  fetchAttrs = [ "src" "sourceRoot" "setSourceRoot" "unpackPhase" "patches" ];
-  getAttrsOrNull = names: attrs: lib.genAttrs names (name: if attrs ? ${name} then attrs.${name} else null);
-  flutterDeps = [
-    # flutter deps
-    flutter.unwrapped
-    bash
-    curl
-    flutter.dart
-    git
-    unzip
-    which
-    xz
-  ];
-  self =
-(self: llvmPackages_13.stdenv.mkDerivation (args // {
-  deps = stdenvNoCC.mkDerivation (lib.recursiveUpdate (getAttrsOrNull fetchAttrs args) {
-    name = "${self.name}-deps-flutter-v${flutter.unwrapped.version}-${stdenvNoCC.targetPlatform.system}.tar.gz";
+  hasEngine = flutter ? engine && flutter.engine != null && flutter.engine.meta.available;
+  flutterMode = args.flutterMode or (if hasEngine then flutter.engine.runtimeMode else "release");
 
-    nativeBuildInputs = flutterDeps ++ [
-      nukeReferences
-    ];
+  flutterFlags = lib.optional hasEngine "--local-engine host_${flutterMode}${lib.optionalString (!flutter.engine.isOptimized) "_unopt"}";
 
-    # avoid pub phase
-    dontBuild = true;
+  flutterBuildFlags = [
+    "--${flutterMode}"
+  ] ++ (args.flutterBuildFlags or []) ++ flutterFlags;
 
-    installPhase = ''
-      . ${../fetchgit/deterministic-git}
+  builderArgs = rec {
+    universal = args // {
+      inherit flutterMode flutterFlags flutterBuildFlags;
 
-      TMP=$(mktemp -d)
+      sdkSetupScript = ''
+        # Pub needs SSL certificates. Dart normally looks in a hardcoded path.
+        # https://github.com/dart-lang/sdk/blob/3.1.0/runtime/bin/security_context_linux.cc#L48
+        #
+        # Dart does not respect SSL_CERT_FILE...
+        # https://github.com/dart-lang/sdk/issues/48506
+        # ...and Flutter does not support --root-certs-file, so the path cannot be manually set.
+        # https://github.com/flutter/flutter/issues/56607
+        # https://github.com/flutter/flutter/issues/113594
+        #
+        # libredirect is of no use either, as Flutter does not pass any
+        # environment variables (including LD_PRELOAD) to the Pub process.
+        #
+        # Instead, Flutter is patched to allow the path to the Dart binary used for
+        # Pub commands to be overriden.
+        export NIX_FLUTTER_PUB_DART="${runCommand "dart-with-certs" { nativeBuildInputs = [ makeWrapper ]; } ''
+          mkdir -p "$out/bin"
+          makeWrapper ${flutter.dart}/bin/dart "$out/bin/dart" \
+            --add-flags "--root-certs-file=${cacert}/etc/ssl/certs/ca-bundle.crt"
+        ''}/bin/dart"
 
-      export HOME="$TMP"
-      export PUB_CACHE=''${PUB_CACHE:-"$HOME/.pub-cache"}
-      export ANDROID_EMULATOR_USE_SYSTEM_LIBS=1
+        export HOME="$NIX_BUILD_TOP"
+        flutter config $flutterFlags --no-analytics &>/dev/null # mute first-run
+        flutter config $flutterFlags --enable-linux-desktop >/dev/null
+      '';
 
-      flutter config --no-analytics &>/dev/null # mute first-run
-      flutter config --enable-linux-desktop
-      flutter packages get
-      flutter build linux || true # so it downloads tools
-      ${lib.optionalString (args ? flutterExtraFetchCommands) args.flutterExtraFetchCommands}
+      pubGetScript = args.pubGetScript or "flutter${lib.optionalString hasEngine " --local-engine $flutterMode"} pub get";
 
-      RES="$TMP"
+      sdkSourceBuilders = {
+        # https://github.com/dart-lang/pub/blob/68dc2f547d0a264955c1fa551fa0a0e158046494/lib/src/sdk/flutter.dart#L81
+        "flutter" = name: runCommand "flutter-sdk-${name}" { passthru.packageRoot = "."; } ''
+          for path in '${flutter}/packages/${name}' '${flutter}/bin/cache/pkg/${name}'; do
+            if [ -d "$path" ]; then
+              ln -s "$path" "$out"
+              break
+            fi
+          done
 
-      mkdir -p "$RES/f"
+          if [ ! -e "$out" ]; then
+            echo 1>&2 'The Flutter SDK does not contain the requested package: ${name}!'
+            exit 1
+          fi
+        '';
+        # https://github.com/dart-lang/pub/blob/e1fbda73d1ac597474b82882ee0bf6ecea5df108/lib/src/sdk/dart.dart#L80
+        "dart" = name: runCommand "dart-sdk-${name}" { passthru.packageRoot = "."; } ''
+          for path in '${flutter.dart}/pkg/${name}'; do
+            if [ -d "$path" ]; then
+              ln -s "$path" "$out"
+              break
+            fi
+          done
 
-      # so we can use lock, diff yaml
-      cp "pubspec.yaml" "$RES"
-      cp "pubspec.lock" "$RES"
-      [[ -e .packages ]] && mv .packages "$RES/f"
-      mv .dart_tool .flutter-plugins .flutter-plugins-dependencies "$RES/f"
+          if [ ! -e "$out" ]; then
+            echo 1>&2 'The Dart SDK does not contain the requested package: ${name}!'
+            exit 1
+          fi
+        '';
+      };
 
-      # replace paths with placeholders
-      find "$RES" -type f -exec sed -i \
-        -e s,$TMP,${placeholder_deps},g \
-        -e s,${flutter.unwrapped},${placeholder_flutter},g \
-        {} +
+      extraPackageConfigSetup = ''
+        # https://github.com/flutter/flutter/blob/3.13.8/packages/flutter_tools/lib/src/dart/pub.dart#L755
+        if [ "$('${yq}/bin/yq' '.flutter.generate // false' pubspec.yaml)" = "true" ]; then
+          export TEMP_PACKAGES=$(mktemp)
+          '${jq}/bin/jq' '.packages |= . + [{
+            name: "flutter_gen",
+            rootUri: "flutter_gen",
+            languageVersion: "2.12",
+          }]' "$out" > "$TEMP_PACKAGES"
+          cp "$TEMP_PACKAGES" "$out"
+          rm "$TEMP_PACKAGES"
+          unset TEMP_PACKAGES
+        fi
+      '';
+    };
 
-      remove_line_matching() {
-        replace_line_matching "$1" "$2" ""
-      }
+    linux = universal // {
+      outputs = universal.outputs or [ ] ++ [ "debug" ];
 
-      replace_line_matching() {
-        sed "s|.*$2.*|$3|g" -r -i "$1"
-      }
+      nativeBuildInputs = (universal.nativeBuildInputs or [ ]) ++ [
+        wrapGAppsHook3
 
-      # nuke nondeterminism
+        # Flutter requires pkg-config for Linux desktop support, and many plugins
+        # attempt to use it.
+        #
+        # It is available to the `flutter` tool through its wrapper, but it must be
+        # added here as well so the setup hook adds plugin dependencies to the
+        # pkg-config search paths.
+        pkg-config
+      ];
 
-      # clientId is random
-      remove_line_matching "$RES/.flutter" clientId
+      buildInputs = (universal.buildInputs or [ ]) ++ [ glib ];
 
-      # deterministic git repos
-      find "$RES" -iname .git -type d | while read -r repoGit; do
-        make_deterministic_repo "$(dirname "$repoGit")"
-      done
+      dontDartBuild = true;
+      buildPhase = universal.buildPhase or ''
+        runHook preBuild
 
-      # dart _fetchedAt, etc
-      DART_DATE=$(date --date="@$SOURCE_DATE_EPOCH" -In | sed "s|,|.|g" | sed "s|+.*||g")
-      find "$RES/.pub-cache" -iname "*.json" -exec sed -r 's|.*_fetchedAt.*|    "_fetchedAt": "'"$DART_DATE"'",|g' -i {} +
-      replace_line_matching "$RES/f/.dart_tool/package_config.json" '"generated"' '"generated": "'"$DART_DATE"'",'
-      replace_line_matching "$RES/f/.flutter-plugins-dependencies" '"date_created"' '"date_created": "'"$DART_DATE"'",'
-      [[ -e "$RES/f/.packages" ]] && remove_line_matching "$RES/f/.packages" "Generated by pub"
+        mkdir -p build/flutter_assets/fonts
 
-      # nuke refs
-      find "$RES" -type f -exec nuke-refs {} +
+        flutter build linux -v --split-debug-info="$debug" $flutterBuildFlags
 
-      # Build a reproducible tar, per instructions at https://reproducible-builds.org/docs/archives/
-      tar --owner=0 --group=0 --numeric-owner --format=gnu \
-          --sort=name --mtime="@$SOURCE_DATE_EPOCH" \
-          -czf "$out" -C "$RES" .
-    '';
+        runHook postBuild
+      '';
 
-    GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-    SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+      dontDartInstall = true;
+      installPhase = universal.installPhase or ''
+        runHook preInstall
 
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND" "NIX_GIT_SSL_CAINFO" "SOCKS_SERVER"
-    ];
+        built=build/linux/*/$flutterMode/bundle
 
-    # unnecesarry
-    dontFixup = true;
+        mkdir -p $out/bin
+        mv $built $out/app
 
-    outputHashAlgo = if self ? vendorHash then null else "sha256";
-    # outputHashMode = "recursive";
-    outputHash = if self ? vendorHash then
-      self.vendorHash
-    else if self ? vendorSha256 then
-      self.vendorSha256
-    else
-      lib.fakeSha256;
+        for f in $(find $out/app -iname "*.desktop" -type f); do
+          install -D $f $out/share/applications/$(basename $f)
+        done
 
-  });
+        for f in $(find $out/app -maxdepth 1 -type f); do
+          ln -s $f $out/bin/$(basename $f)
+        done
 
-  nativeBuildInputs = flutterDeps ++ [
-    # flutter dev tools
-    cmake
-    ninja
-    pkg-config
-    wrapGAppsHook
-    # flutter likes dynamic linking
-    autoPatchelfHook
-  ] ++ lib.optionals (args ? nativeBuildInputs) args.nativeBuildInputs;
+        # make *.so executable
+        find $out/app -iname "*.so" -type f -exec chmod +x {} +
 
-  buildInputs = [
-    # cmake deps
-    gtk3
-    glib
-    pcre
-    util-linux
-    # also required by cmake, not sure if really needed or dep of all packages
-    libselinux
-    libsepol
-    libthai
-    libdatrie
-    xorg.libXdmcp
-    xorg.libXtst
-    libxkbcommon
-    dbus
-    at-spi2-core
-    libsecret
-    jsoncpp
-    # build deps
-    xorg.libX11
-    # directly required by build
-    libepoxy
-  ] ++ lib.optionals (args ? buildInputs) args.buildInputs;
+        # remove stuff like /build/source/packages/ubuntu_desktop_installer/linux/flutter/ephemeral
+        for f in $(find $out/app -executable -type f); do
+          if patchelf --print-rpath "$f" | grep /build; then # this ignores static libs (e,g. libapp.so) also
+            echo "strip RPath of $f"
+            newrp=$(patchelf --print-rpath $f | sed -r "s|/build.*ephemeral:||g" | sed -r "s|/build.*profile:||g")
+            patchelf --set-rpath "$newrp" "$f"
+          fi
+        done
 
-  # TODO: do we need this?
-  NIX_LDFLAGS = "-rpath ${lib.makeLibraryPath self.buildInputs}";
-  env.NIX_CFLAGS_COMPILE = "-I${xorg.libX11}/include";
-  LD_LIBRARY_PATH = lib.makeLibraryPath self.buildInputs;
+        runHook postInstall
+      '';
 
-  configurePhase = ''
-    runHook preConfigure
+      dontWrapGApps = true;
+      extraWrapProgramArgs = ''
+        ''${gappsWrapperArgs[@]} \
+        ${extraWrapProgramArgs}
+      '';
+    };
 
-    # for some reason fluffychat build breaks without this - seems file gets overriden by some tool
-    cp pubspec.yaml pubspec-backup
+    web = universal // {
+      dontDartBuild = true;
+      buildPhase = universal.buildPhase or ''
+        runHook preBuild
 
-    # we get this from $depsFolder so disabled for now, but we might need it again once deps are fetched properly
-    # flutter config --no-analytics >/dev/null 2>/dev/null # mute first-run
-    # flutter config --enable-linux-desktop
+        mkdir -p build/flutter_assets/fonts
 
-    # extract deps
-    depsFolder=$(mktemp -d)
-    tar xzf "$deps" -C "$depsFolder"
+        flutter build web -v $flutterBuildFlags
 
-    # after extracting update paths to point to real paths
-    find "$depsFolder" -type f -exec sed -i \
-      -e s,${placeholder_deps},$depsFolder,g \
-      -e s,${placeholder_flutter},${flutter.unwrapped},g \
-      {} +
+        runHook postBuild
+      '';
 
-    # ensure we're using a lockfile for the right package version
-    if [ -e pubspec.lock ]; then
-      # FIXME: currently this is broken. in theory this should not break, but flutter has it's own way of doing things.
-      # diff -u pubspec.lock $depsFolder/pubspec.lock
-      true
-    else
-      cp -v "$depsFolder/pubspec.lock" .
-    fi
-    diff -u pubspec.yaml $depsFolder/pubspec.yaml
+      dontDartInstall = true;
+      installPhase = universal.installPhase or ''
+        runHook preInstall
 
-    mv -v $(find $depsFolder/f -type f) .
+        cp -r build/web "$out"
 
-    # prepare
-    export HOME=$depsFolder
-    export PUB_CACHE=''${PUB_CACHE:-"$HOME/.pub-cache"}
-    export ANDROID_EMULATOR_USE_SYSTEM_LIBS=1
+        runHook postInstall
+      '';
+    };
+  }.${targetFlutterPlatform} or (throw "Unsupported Flutter host platform: ${targetFlutterPlatform}");
 
-    # binaries need to be patched
-    autoPatchelf -- "$depsFolder"
+  minimalFlutter = flutter.override { supportedTargetFlutterPlatforms = [ "universal" targetFlutterPlatform ]; };
 
-    runHook postConfigure
-  '';
-
-  buildPhase = ''
-    runHook preBuild
-
-    # for some reason fluffychat build breaks without this - seems file gets overriden by some tool
-    mv pubspec-backup pubspec.yaml
-    mkdir -p build/flutter_assets/fonts
-
-    flutter packages get --offline -v
-    flutter build linux --release -v
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    built=build/linux/*/release/bundle
-
-    mkdir -p $out/bin
-    mv $built $out/app
-
-    for f in $(find $out/app -iname "*.desktop" -type f); do
-      install -D $f $out/share/applications/$(basename $f)
-    done
-
-    for f in $(find $out/app -maxdepth 1 -type f); do
-      ln -s $f $out/bin/$(basename $f)
-    done
-
-    # this confuses autopatchelf hook otherwise
-    rm -rf "$depsFolder"
-
-    # make *.so executable
-    find $out/app -iname "*.so" -type f -exec chmod +x {} +
-
-    # remove stuff like /build/source/packages/ubuntu_desktop_installer/linux/flutter/ephemeral
-    for f in $(find $out/app -executable -type f); do
-      if patchelf --print-rpath "$f" | grep /build; then # this ignores static libs (e,g. libapp.so) also
-        echo "strip RPath of $f"
-        newrp=$(patchelf --print-rpath $f | sed -r "s|/build.*ephemeral:||g" | sed -r "s|/build.*profile:||g")
-        patchelf --set-rpath "$newrp" "$f"
-      fi
-    done
-
-    runHook postInstall
-  '';
-})) self;
+  buildAppWith = flutter: buildDartApplication.override { dart = flutter; };
 in
-  self
+buildAppWith minimalFlutter (builderArgs // { passthru = builderArgs.passthru or { } // { multiShell = buildAppWith flutter builderArgs; }; })

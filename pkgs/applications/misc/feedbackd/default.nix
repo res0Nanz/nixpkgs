@@ -11,7 +11,7 @@
 , ninja
 , pkg-config
 , vala
-, wrapGAppsHook
+, wrapGAppsHook3
 , glib
 , gsound
 , json-glib
@@ -30,7 +30,7 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "feedbackd";
-  version = "0.1.0";
+  version = "0.2.0";
 
   outputs = [ "out" "dev" "devdoc" ];
 
@@ -39,7 +39,7 @@ stdenv.mkDerivation rec {
     owner = "Librem5";
     repo = "feedbackd";
     rev = "v${version}";
-    hash = "sha256-7H5Ah4zo+wLKd0WoKoOgtIm7HcUSw8PTf/KzBlY75oc=";
+    hash = "sha256-l5rfMx3ElW25A5WVqzfKBp57ebaNC9msqV7mvnwv10s=";
     fetchSubmodules = true;
   };
 
@@ -58,7 +58,7 @@ stdenv.mkDerivation rec {
     ninja
     pkg-config
     vala
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -97,10 +97,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "A daemon to provide haptic (and later more) feedback on events";
+    description = "Daemon to provide haptic (and later more) feedback on events";
     homepage = "https://source.puri.sm/Librem5/feedbackd";
     license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ pacman99 tomfitzhenry ];
+    maintainers = with maintainers; [ pacman99 ];
     platforms = platforms.linux;
   };
 }

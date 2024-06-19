@@ -26,9 +26,10 @@ rustPlatform.buildRustPackage rec {
 
   meta = with lib; {
     broken = stdenv.isDarwin;
-    description = "A virtual file system for sandboxing";
+    description = "Virtual file system for sandboxing";
     homepage = "https://github.com/bazelbuild/sandboxfs";
     license = with licenses; [ asl20 ];
     maintainers = with maintainers; [ jeremyschlatter ];
+    mainProgram = "sandboxfs";
   };
 }

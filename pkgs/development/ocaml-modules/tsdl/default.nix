@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl, ocaml, findlib, ocamlbuild, topkg, ctypes, result, SDL2, pkg-config
+{ lib, stdenv, fetchurl, ocaml, findlib, ocamlbuild, topkg, ctypes, ctypes-foreign, result, SDL2, pkg-config
 , AudioToolbox, Cocoa, CoreAudio, CoreVideo, ForceFeedback }:
 
 if lib.versionOlder ocaml.version "4.03"
@@ -7,23 +7,24 @@ else
 
 let
   pname = "tsdl";
-  version = "0.9.9";
+  version = "1.0.0";
   webpage = "https://erratique.ch/software/${pname}";
 in
 
 stdenv.mkDerivation {
-  name = "ocaml${ocaml.version}-${pname}-${version}";
+  pname = "ocaml${ocaml.version}-${pname}";
+  inherit version;
 
   src = fetchurl {
     url = "${webpage}/releases/${pname}-${version}.tbz";
-    sha256 = "sha256-GqFz+bYG2ESkAEJyP8DKud4JFfU5MGLulzJa5Z4sptQ=";
+    hash = "sha256-XdgzCj9Uqplt/8Jk8rSFaQf8zu+9SZa8b9ZIlW/gjyE=";
   };
 
   strictDeps = true;
 
   nativeBuildInputs = [ pkg-config ocaml findlib ocamlbuild topkg ];
   buildInputs = [ topkg ];
-  propagatedBuildInputs = [ SDL2 ctypes ]
+  propagatedBuildInputs = [ SDL2 ctypes ctypes-foreign ]
     ++ lib.optionals stdenv.isDarwin [ AudioToolbox Cocoa CoreAudio CoreVideo ForceFeedback ];
 
   preConfigure = ''

@@ -1,6 +1,7 @@
-{ lib
-, fetchPypi
-, buildPythonPackage
+{
+  lib,
+  fetchPypi,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
@@ -9,15 +10,13 @@ buildPythonPackage rec {
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-s31uDJtuHXyhz1vHFSq2SkxGcfWcha2vej/LhwNXp3Q=";
+    hash = "sha256-s31uDJtuHXyhz1vHFSq2SkxGcfWcha2vej/LhwNXp3Q=";
   };
 
   # nativeCheckInputs = [ pytestCheckHook spacy ];
   doCheck = false;
 
-  pythonImportsCheck = [
-    "spacy_legacy"
-  ];
+  pythonImportsCheck = [ "spacy_legacy" ];
 
   meta = with lib; {
     description = "Legacy registered functions for spaCy backwards compatibility";

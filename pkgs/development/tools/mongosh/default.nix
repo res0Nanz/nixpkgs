@@ -6,7 +6,7 @@
 }:
 
 let
-  source = builtins.fromJSON (builtins.readFile ./source.json);
+  source = lib.importJSON ./source.json;
 in
 buildNpmPackage {
   pname = "mongosh";
@@ -36,7 +36,7 @@ buildNpmPackage {
 
   meta = with lib; {
     homepage = "https://www.mongodb.com/try/download/shell";
-    description = "The MongoDB Shell";
+    description = "MongoDB Shell";
     maintainers = with maintainers; [ aaronjheng ];
     license = licenses.asl20;
     mainProgram = "mongosh";

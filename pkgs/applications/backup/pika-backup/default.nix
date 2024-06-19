@@ -3,6 +3,7 @@
 , fetchFromGitLab
 , rustPlatform
 , substituteAll
+, cargo
 , desktop-file-utils
 , git
 , itstool
@@ -10,6 +11,7 @@
 , ninja
 , pkg-config
 , python3
+, rustc
 , wrapGAppsHook4
 , borgbackup
 , gtk4
@@ -19,26 +21,26 @@
 
 stdenv.mkDerivation rec {
   pname = "pika-backup";
-  version = "0.5.2";
+  version = "0.7.2";
 
   src = fetchFromGitLab {
     domain = "gitlab.gnome.org";
     owner = "World";
     repo = "pika-backup";
     rev = "v${version}";
-    hash = "sha256-d+VkKY14o1wwINSlVBsvWux8YhyXg77N9i2R61QLGqM=";
+    hash = "sha256-Z9vRuz5PwOhJ3DQD9zvCilgTMww7bRL4aR6fRoHIayI=";
   };
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit src;
     name = "${pname}-${version}";
-    hash = "sha256-3MNwX8kB+bjP9Dz+k+HYmCOI1Naa9tDBe0+GKsEmqnc=";
+    hash = "sha256-hcfkwxwLOUBMj6rvhI5F4OO9UaSP7CAE0JNOGlh2lVY=";
   };
 
   patches = [
     (substituteAll {
       src = ./borg-path.patch;
-      borg = "${borgbackup}/bin/borg";
+      borg = lib.getExe borgbackup;
     })
   ];
 
@@ -55,11 +57,10 @@ stdenv.mkDerivation rec {
     pkg-config
     python3
     wrapGAppsHook4
-  ] ++ (with rustPlatform; [
-    cargoSetupHook
-    rust.cargo
-    rust.rustc
-  ]);
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
+  ];
 
   buildInputs = [
     gtk4

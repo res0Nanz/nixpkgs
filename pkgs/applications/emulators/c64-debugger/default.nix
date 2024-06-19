@@ -12,7 +12,7 @@
 }:
 
 stdenv.mkDerivation {
-  name = "c64-debugger";
+  pname = "c64-debugger";
   version = "0.64.58.6";
 
   src = fetchgit {
@@ -26,13 +26,13 @@ stdenv.mkDerivation {
     gtk3
     libGL
     libGLU
-    pkg-config
     libX11
     xcbutil
   ];
 
   nativeBuildInputs = [
     upx
+    pkg-config
   ];
 
   postPatch = ''

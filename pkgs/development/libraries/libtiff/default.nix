@@ -1,18 +1,21 @@
-{ lib, stdenv
+{ lib
+, stdenv
 , fetchFromGitLab
-, fetchpatch
 , nix-update-script
 
 , autoreconfHook
 , pkg-config
 , sphinx
 
+, lerc
 , libdeflate
 , libjpeg
+, libwebp
 , xz
 , zlib
+, zstd
 
-# for passthru.tests
+  # for passthru.tests
 , libgeotiff
 , python3Packages
 , imagemagick
@@ -20,17 +23,18 @@
 , gdal
 , openimageio
 , freeimage
+, testers
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "libtiff";
-  version = "4.5.0";
+  version = "4.6.0";
 
   src = fetchFromGitLab {
     owner = "libtiff";
     repo = "libtiff";
-    rev = "v${version}";
-    hash = "sha256-KG6rB940JMjFUTAgtkzg+Zh75gylPY6Q7/4gEbL0Hcs=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-qCg5qjsPPynCHIg0JsPJldwVdcYkI68zYmyNAKUCoyw=";
   };
 
   patches = [
@@ -39,11 +43,6 @@ stdenv.mkDerivation rec {
     # libc++abi 11 has an `#include <version>`, this picks up files name
     # `version` in the project's include paths
     ./rename-version.patch
-    (fetchpatch {
-      name = "CVE-2022-48281.patch";
-      url = "https://gitlab.com/libtiff/libtiff/-/commit/d1b6b9c1b3cae2d9e37754506c1ad8f4f7b646b5.diff";
-      sha256 = "sha256-FWUlyJyHXac6fuM5f9PG33kcF5Bm4fyFmYnaDal46iM=";
-    })
   ];
 
   postPatch = ''
@@ -63,9 +62,22 @@ stdenv.mkDerivation rec {
   # sure cross-compilation works first!
   nativeBuildInputs = [ autoreconfHook pkg-config sphinx ];
 
-  propagatedBuildInputs = [ libjpeg xz zlib ]; #TODO: opengl support (bogus configure detection)
+  buildInputs = [
+    lerc
+    zstd
+  ];
 
-  buildInputs = [ libdeflate ];
+  # TODO: opengl support (bogus configure detection)
+  propagatedBuildInputs = [
+    libdeflate
+    libjpeg
+    # libwebp depends on us; this will cause infinite
+    # recursion otherwise
+    (libwebp.override { tiffSupport = false; })
+    xz
+    zlib
+    zstd
+  ];
 
   enableParallelBuilding = true;
 
@@ -75,6 +87,9 @@ stdenv.mkDerivation rec {
     tests = {
       inherit libgeotiff imagemagick graphicsmagick gdal openimageio freeimage;
       inherit (python3Packages) pillow imread;
+      pkg-config = testers.hasPkgConfigModules {
+        package = finalAttrs.finalPackage;
+      };
     };
     updateScript = nix-update-script { };
   };
@@ -82,9 +97,10 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Library and utilities for working with the TIFF image file format";
     homepage = "https://libtiff.gitlab.io/libtiff";
-    changelog = "https://libtiff.gitlab.io/libtiff/v${version}.html";
-    maintainers = with maintainers; [ qyliss ];
+    changelog = "https://libtiff.gitlab.io/libtiff/releases/v${finalAttrs.version}.html";
     license = licenses.libtiff;
-    platforms = platforms.unix;
+    platforms = platforms.unix ++ platforms.windows;
+    pkgConfigModules = [ "libtiff-4" ];
+    maintainers = teams.geospatial.members;
   };
-}
+})

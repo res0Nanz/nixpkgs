@@ -1,14 +1,15 @@
-{ stdenv
-, lib
-, buildPythonPackage
-, fetchPypi
-, fetchpatch
-, fetchurl
-, librosa
-, matplotlib
-, mido
-, torch
-, torchlibrosa
+{
+  stdenv,
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  fetchpatch,
+  fetchurl,
+  librosa,
+  matplotlib,
+  mido,
+  torch,
+  torchlibrosa,
 }:
 
 buildPythonPackage rec {
@@ -38,11 +39,15 @@ buildPythonPackage rec {
   ];
 
   patches = [
-    # Fix run against librosa 0.9.0
-    # https://github.com/qiuqiangkong/piano_transcription_inference/pull/10
+    # Fix run against librosa 0.10.0
+    # https://github.com/qiuqiangkong/piano_transcription_inference/pull/14
     (fetchpatch {
       url = "https://github.com/qiuqiangkong/piano_transcription_inference/commit/b2d448916be771cd228f709c23c474942008e3e8.patch";
       hash = "sha256-8O4VtFij//k3fhcbMRz4J8Iz4AdOPLkuk3UTxuCSy8U=";
+    })
+    (fetchpatch {
+      url = "https://github.com/qiuqiangkong/piano_transcription_inference/commit/61443632dc5ea69a072612b6fa3f7da62c96b72c.patch";
+      hash = "sha256-I9+Civ95BnPUX0WQhTU/pGQruF5ctIgkIdxCK+xO3PE=";
     })
   ];
 
@@ -67,7 +72,7 @@ buildPythonPackage rec {
   pythonImportsCheck = [ "piano_transcription_inference" ];
 
   meta = with lib; {
-    description = "A piano transcription inference package";
+    description = "Piano transcription inference package";
     homepage = "https://github.com/qiuqiangkong/piano_transcription_inference";
     license = licenses.mit;
     maintainers = with maintainers; [ azuwis ];

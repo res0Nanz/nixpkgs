@@ -11,12 +11,9 @@
 
 let param =
   if lib.versionAtLeast ppxlib.version "0.26.0" then
-    if lib.versionAtLeast ocaml.version "4.14" then {
-      version = "3.1";
-      sha256 = "sha256-qG8Wxd/ATwoogeKJDyt5gkGhP5Wvc0j0mMqcoVDkeq4=";
-    } else {
-      version = "3.0";
-      sha256 = "sha256-+4ggynMznVfjviMBjXil8CXdMByq4kSmDz6P2PyEETA=";
+    {
+      version = "3.2";
+      sha256 = "sha256-5Vf1LRhSotNpTPzHmRgCMRYtrpgaspLlyzv1XdGt+u8=";
     }
   else {
     version = "2.5";
@@ -47,6 +44,7 @@ buildDunePackage rec {
   inherit (param) version;
 
   minimalOCamlVersion = "4.08";
+  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "ocaml-community";
@@ -80,8 +78,8 @@ buildDunePackage rec {
   meta = {
     homepage = "https://github.com/ocaml-community/sedlex";
     changelog = "https://github.com/ocaml-community/sedlex/raw/v${version}/CHANGES";
-    description = "An OCaml lexer generator for Unicode";
+    description = "OCaml lexer generator for Unicode";
     license = lib.licenses.mit;
-    maintainers = [ lib.maintainers.marsam ];
+    maintainers = [ ];
   };
 }

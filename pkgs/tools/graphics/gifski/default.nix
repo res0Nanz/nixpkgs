@@ -1,27 +1,55 @@
-{ stdenv, lib, rustPlatform, fetchFromGitHub, pkg-config }:
+{ lib
+, rustPlatform
+, fetchFromGitHub
+, pkg-config
+, ffmpeg
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "gifski";
-  version = "1.10.0";
+  version = "1.14.4";
 
   src = fetchFromGitHub {
     owner = "ImageOptim";
     repo = "gifski";
     rev = version;
-    sha256 = "sha256-JJSAU9z3JOlvfW6AW/P/KrjhOcD0ax8TmqgqM48rlAo=";
+    hash = "sha256-Yhcz3pbEsSlpxQ1couFgQuaS8Eru7PLiGFNHcKmiFak=";
   };
 
-  cargoHash = "sha256-UV2iQFbeGvJs8kEowYRNv8DxEGwaIWL1/3A2oUCcauw=";
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+    outputHashes = {
+      "ffmpeg-sys-next-6.1.0" = "sha256-RB9sDQoP68Dzqk8tIuYlOX3dZcS64hKI5KpTGq/7xbM=";
+    };
+  };
 
-  nativeBuildInputs = lib.optionals stdenv.isLinux [ pkg-config ];
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+  ];
 
-  # error: the crate `gifski` is compiled with the panic strategy `abort` which is incompatible with this crate's strategy of `unwind`
-  doCheck = !stdenv.isDarwin;
+  buildInputs = [
+    ffmpeg
+  ];
+
+  buildFeatures = [ "video" ];
+
+  # When the default checkType of release is used, we get the following error:
+  #
+  #   error: the crate `gifski` is compiled with the panic strategy `abort` which
+  #   is incompatible with this crate's strategy of `unwind`
+  #
+  # It looks like https://github.com/rust-lang/cargo/issues/6313, which does not
+  # outline a solution.
+  #
+  checkType = "debug";
 
   meta = with lib; {
     description = "GIF encoder based on libimagequant (pngquant)";
     homepage = "https://gif.ski/";
-    license = licenses.agpl3;
-    maintainers = [ maintainers.marsam ];
+    changelog = "https://github.com/ImageOptim/gifski/releases/tag/${src.rev}";
+    license = licenses.agpl3Plus;
+    maintainers = with maintainers; [ figsoda ];
+    mainProgram = "gifski";
   };
 }

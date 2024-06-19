@@ -24,6 +24,7 @@ let
     license = licenses.mit;
     maintainers = with maintainers; [ seberm ];
   };
+  updateScript = ./update.sh;
 in
 {
   teos = rustPlatform.buildRustPackage {
@@ -43,10 +44,12 @@ in
       darwin.apple_sdk.frameworks.Security
     ];
 
+    passthru.updateScript = updateScript;
+
     __darwinAllowLocalNetworking = true;
 
     meta = meta // {
-      description = "A Lightning watchtower compliant with BOLT13, written in Rust";
+      description = "Lightning watchtower compliant with BOLT13, written in Rust";
     };
   };
 
@@ -70,10 +73,12 @@ in
       darwin.apple_sdk.frameworks.SystemConfiguration
     ];
 
+    passthru.updateScript = updateScript;
+
     __darwinAllowLocalNetworking = true;
 
     meta = meta // {
-      description = "A Lightning watchtower plugin for clightning";
+      description = "Lightning watchtower plugin for clightning";
       mainProgram = "watchtower-client";
     };
   };

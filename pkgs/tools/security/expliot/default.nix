@@ -10,7 +10,7 @@ let
         version = "1.5.0";
         src = oldAttrs.src.override {
           inherit version;
-          sha256 = "0qiax309my534drk81lihq9ghngr96qnm40kbmgc9ay4fncqq6kh";
+          hash = "sha256-cBqMmXXEq8ReXROQarFJ+Vn4EoaRBjRzI6P4msDoKmI=";
         };
         doCheck = false;
       });
@@ -71,6 +71,7 @@ buildPythonApplication rec {
 
   meta = with lib; {
     description = "IoT security testing and exploitation framework";
+    mainProgram = "expliot";
     longDescription = ''
       EXPLIoT is a Framework for security testing and exploiting IoT
       products and IoT infrastructure. It provides a set of plugins

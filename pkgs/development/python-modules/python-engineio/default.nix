@@ -1,42 +1,47 @@
-{ lib
-, stdenv
-, aiohttp
-, buildPythonPackage
-, eventlet
-, fetchFromGitHub
-, fetchpatch
-, iana-etc
-, libredirect
-, mock
-, pytestCheckHook
-, pythonOlder
-, requests
-, tornado
-, websocket-client
+{
+  lib,
+  stdenv,
+  aiohttp,
+  buildPythonPackage,
+  setuptools,
+  eventlet,
+  fetchFromGitHub,
+  iana-etc,
+  libredirect,
+  mock,
+  pytestCheckHook,
+  pythonOlder,
+  requests,
+  simple-websocket,
+  tornado,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "python-engineio";
-  version = "4.3.4";
-  format = "setuptools";
+  version = "4.9.1";
+  pyproject = true;
 
-  disabled = pythonOlder "3.6";
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
     repo = "python-engineio";
     rev = "refs/tags/v${version}";
-    hash = "sha256-fymO9WqkYaRsHKCJHQJpySHqZor2t8BfVrfYUfYoJno=";
+    hash = "sha256-wn2qiVkL05GTopGJeghHe9i+wyOQZbEeYDmEIIbXDS0=";
   };
 
-  patches = [
-    # Address Python 3.11 mocking issue, https://github.com/miguelgrinberg/python-engineio/issues/279
-    (fetchpatch {
-      name = "mocking-issue-py311.patch";
-      url = "https://github.com/miguelgrinberg/python-engineio/commit/ac3911356fbe933afa7c11d56141f0e228c01528.patch";
-      hash = "sha256-LNMhjX8kqOI3y8XugCHxCPEC6lF83NROfIczXWiLuqY=";
-    })
-  ];
+  build-system = [ setuptools ];
+
+  dependencies = [ simple-websocket ];
+
+  passthru.optional-dependencies = {
+    client = [
+      requests
+      websocket-client
+    ];
+    asyncio_client = [ aiohttp ];
+  };
 
   nativeCheckInputs = [
     aiohttp
@@ -61,13 +66,9 @@ buildPythonPackage rec {
   '';
 
   # somehow effective log level does not change?
-  disabledTests = [
-    "test_logger"
-  ];
+  disabledTests = [ "test_logger" ];
 
-  pythonImportsCheck = [
-    "engineio"
-  ];
+  pythonImportsCheck = [ "engineio" ];
 
   meta = with lib; {
     description = "Python based Engine.IO client and server";

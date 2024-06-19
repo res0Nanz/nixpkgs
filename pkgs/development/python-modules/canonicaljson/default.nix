@@ -1,50 +1,33 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, frozendict
-, pytestCheckHook
-, pythonOlder
-, setuptools
-, simplejson
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  frozendict,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools,
+  simplejson,
 }:
 
 buildPythonPackage rec {
   pname = "canonicaljson";
-  version = "1.6.5";
+  version = "2.0.0";
   format = "pyproject";
 
   disabled = pythonOlder "3.7";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-aN/BV7AR4H2Uv3S11MzAGVhYTtlC2d/V/dcGYJ6BzUs=";
+    hash = "sha256-4v2u8df63F2ctZvT0NQbBk3dppeAmsQyXc7XIdEvET8=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
-  propagatedBuildInputs = [
-    simplejson
-  ];
+  propagatedBuildInputs = [ simplejson ];
 
-  passthru.optional-dependencies = {
-    frozendict = [
-      frozendict
-    ];
-  };
+  nativeCheckInputs = [ pytestCheckHook ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  disabledTests = [
-    "test_frozen_dict"
-  ];
-
-  pythonImportsCheck = [
-    "canonicaljson"
-  ];
+  pythonImportsCheck = [ "canonicaljson" ];
 
   meta = with lib; {
     description = "Encodes objects and arrays as RFC 7159 JSON";

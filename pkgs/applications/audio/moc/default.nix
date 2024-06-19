@@ -15,7 +15,7 @@
 , musepackSupport ? true, libmpc, libmpcdec, taglib
 , vorbisSupport ? true, libvorbis
 , speexSupport ? true, speex
-, ffmpegSupport ? true, ffmpeg
+, ffmpegSupport ? true, ffmpeg_4
 , sndfileSupport ? true, libsndfile
 , wavpackSupport ? true, wavpack
 # Misc
@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
     ++ lib.optionals musepackSupport [ libmpc libmpcdec taglib ]
     ++ lib.optional vorbisSupport libvorbis
     ++ lib.optional speexSupport speex
-    ++ lib.optional ffmpegSupport ffmpeg
+    ++ lib.optional ffmpegSupport ffmpeg_4
     ++ lib.optional sndfileSupport libsndfile
     ++ lib.optional wavpackSupport wavpack
     # Misc
@@ -91,10 +91,11 @@ stdenv.mkDerivation rec {
   ];
 
   meta = with lib; {
-    description = "An ncurses console audio player designed to be powerful and easy to use";
+    description = "Terminal audio player designed to be powerful and easy to use";
     homepage = "http://moc.daper.net/";
     license = licenses.gpl2;
     maintainers = with maintainers; [ aethelz pSub jagajaga ];
     platforms = platforms.unix;
+    mainProgram = "mocp";
   };
 }

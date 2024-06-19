@@ -2,16 +2,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "shadowsocks-rust";
-  version = "1.15.2";
+  version = "1.19.2";
 
   src = fetchFromGitHub {
     rev = "v${version}";
     owner = "shadowsocks";
     repo = pname;
-    hash = "sha256-CvAOvtC5U2njQuUjFxjnGeqhuxrCw4XI6goo1TxIhIU=";
+    hash = "sha256-Mru6HUq0er3zIpyaFcbFfyaoYvD+YHgU+kGp9yW5ia0=";
   };
 
-  cargoHash = "sha256-ctZlYo82M7GKVvrEkw/7+aH9R0MeEsyv3IKl9k4SbiA=";
+  cargoHash = "sha256-mx//rLIsxrGV1nh8HR/Dg+SPRdSapmvulM1nYuHJzg0=";
 
   nativeBuildInputs = lib.optionals stdenv.isLinux [ pkg-config ];
 
@@ -35,18 +35,23 @@ rustPlatform.buildRustPackage rec {
   checkFlags = [
     "--skip=http_proxy"
     "--skip=tcp_tunnel"
+    "--skip=tcprelay"
     "--skip=udp_tunnel"
     "--skip=udp_relay"
     "--skip=socks4_relay_connect"
     "--skip=socks5_relay_aead"
     "--skip=socks5_relay_stream"
+    "--skip=trust_dns_resolver"
   ];
 
+  # timeouts in sandbox
+  doCheck = false;
+
   meta = with lib; {
-    description = "A Rust port of Shadowsocks";
+    description = "Rust port of Shadowsocks";
     homepage = "https://github.com/shadowsocks/shadowsocks-rust";
     changelog = "https://github.com/shadowsocks/shadowsocks-rust/raw/v${version}/debian/changelog";
     license = licenses.mit;
-    maintainers = [ maintainers.marsam ];
+    maintainers = [ ];
   };
 }

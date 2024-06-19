@@ -34,8 +34,9 @@ stdenvNoCC.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/bb010g/betterdiscordctl";
-    description = "A utility for managing BetterDiscord on Linux";
+    description = "Utility for managing BetterDiscord on Linux";
     license = licenses.mit;
+    mainProgram = "betterdiscordctl";
     maintainers = with maintainers; [ ivar bb010g ];
     platforms = platforms.linux;
   };

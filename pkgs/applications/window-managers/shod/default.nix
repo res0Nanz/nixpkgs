@@ -5,29 +5,29 @@
 , fontconfig
 , libX11
 , libXft
-, libXinerama
 , libXpm
+, libXrandr
 , libXrender
 , conf ? null
 }:
 
 stdenv.mkDerivation rec {
   pname = "shod";
-  version = "2.5.0";
+  version = "2.6.2";
 
   src = fetchFromGitHub {
     owner = "phillbush";
     repo = "shod";
     rev = "v${version}";
-    sha256 = "sha256-hunHcYWxboCWM+SYH5u09MKP0b7U/9CVfhC6vLVpc3Q=";
+    hash = "sha256-0bKp1BTIdYVBDVdeGnTVo76UtBxa4UbXLZihdjHS/og=";
   };
 
   buildInputs = [
     fontconfig
     libX11
     libXft
-    libXinerama
     libXpm
+    libXrandr
     libXrender
   ];
 
@@ -42,7 +42,7 @@ stdenv.mkDerivation rec {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = with lib; {
-    description = "A mouse-based window manager that can tile windows inside floating containers";
+    description = "Mouse-based window manager that can tile windows inside floating containers";
     longDescription = ''
       shod is a multi-monitor floating reparenting X11 window manager that
       supports tiled and tabbed containers. shod sets no keybindings, reads no

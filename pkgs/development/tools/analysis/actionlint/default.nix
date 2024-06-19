@@ -10,7 +10,7 @@
 
 buildGoModule rec {
   pname = "actionlint";
-  version = "1.6.23";
+  version = "1.7.1";
 
   subPackages = [ "cmd/actionlint" ];
 
@@ -18,10 +18,10 @@ buildGoModule rec {
     owner = "rhysd";
     repo = "actionlint";
     rev = "v${version}";
-    sha256 = "sha256-0S7sTiTr22FlHHCT3Yw7UccrvgKvUVcPzR8QBUQiOh4=";
+    hash = "sha256-nu3Bj85L68YFNE4loh548A8ik3NCj4V32FlDV8V6BEE=";
   };
 
-  vendorHash = "sha256-3H7reGAJ2RY7WAHOJW92Bl5WW3VSVP8Qg4DVlGZPU+E=";
+  vendorHash = "sha256-ZREtrdHUD1B1Mogidp1y/kFTK+KR4qYJj1c/M+0utPM=";
 
   nativeBuildInputs = [ makeWrapper ronn installShellFiles ];
 
@@ -39,7 +39,7 @@ buildGoModule rec {
     description = "Static checker for GitHub Actions workflow files";
     changelog = "https://github.com/rhysd/actionlint/raw/v${version}/CHANGELOG.md";
     license = licenses.mit;
-    maintainers = [ maintainers.marsam ];
+    maintainers = [ ];
     mainProgram = "actionlint";
   };
 }

@@ -26,9 +26,9 @@ buildGoModule rec {
 
   meta = with lib; {
     homepage = "https://github.com/prasmussen/gdrive";
-    description = "A command line utility for interacting with Google Drive";
+    description = "Command line utility for interacting with Google Drive";
     license = licenses.mit;
-    platforms = platforms.unix;
     maintainers = [ maintainers.rzetterberg ];
+    mainProgram = "gdrive";
   };
 }

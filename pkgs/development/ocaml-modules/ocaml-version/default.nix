@@ -2,19 +2,19 @@
 
 buildDunePackage rec {
   pname = "ocaml-version";
-  version = "3.4.0";
+  version = "3.6.7";
 
   src = fetchurl {
-    url = "https://github.com/ocurrent/ocaml-version/releases/download/v${version}/ocaml-version-v${version}.tbz";
-    sha256 = "sha256-2MG+tejY67dxC19DTOZqPsi3UrHk1rqHxP4nRSvbiiU=";
+    url = "https://github.com/ocurrent/ocaml-version/releases/download/v${version}/ocaml-version-${version}.tbz";
+    hash = "sha256-1Q/9W2adM+2w2InEdqcd5IiNkACNWDNgONIQztKPgQw=";
   };
 
   checkInputs = [ alcotest ];
 
   doCheck = true;
 
-  minimumOCamlVersion = "4.07";
-  useDune2 = true;
+  minimalOCamlVersion = "4.07";
+  duneVersion = "3";
 
   meta = with lib; {
     description = "Manipulate, parse and generate OCaml compiler version strings";

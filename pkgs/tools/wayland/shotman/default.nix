@@ -9,16 +9,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "shotman";
-  version = "0.4.1";
+  version = "0.4.6";
 
   src = fetchFromSourcehut {
     owner = "~whynothugo";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-u8vnRNxi7wLn0M2VZu9YTZuSAM/0afHRP01vve9tD9c=";
+    hash = "sha256-OmYCeB2szWmFJQ+MXWmVI7IzeXgbix9ZK4/4kgR5S6A=";
   };
 
-  cargoHash = "sha256-2HAtkIIJMpYQ+Bk07L8D1w3YlfEuHTcbq14reFja0Kk=";
+  cargoHash = "sha256-Kq2uq171B+4WzEJauH19/nzkm2irM4ggoFfxlARfyEg=";
 
   nativeBuildInputs = [ pkg-config makeWrapper ];
 
@@ -30,10 +30,10 @@ rustPlatform.buildRustPackage rec {
   '';
 
   meta = with lib; {
-    description = "The uncompromising screenshot GUI for Wayland compositors";
+    description = "Uncompromising screenshot GUI for Wayland compositors";
     homepage = "https://git.sr.ht/~whynothugo/shotman";
     license = licenses.isc;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ zendo ];
+    maintainers = with maintainers; [ zendo fpletz ];
   };
 }

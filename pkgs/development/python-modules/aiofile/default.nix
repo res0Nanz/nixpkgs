@@ -1,16 +1,17 @@
-{ lib
-, aiomisc
-, caio
-, buildPythonPackage
-, fetchFromGitHub
-, fetchpatch
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  aiomisc,
+  aiomisc-pytest,
+  caio,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pytestCheckHook,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "aiofile";
-  version = "3.8.0";
+  version = "3.8.6";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
@@ -19,29 +20,18 @@ buildPythonPackage rec {
     owner = "mosquito";
     repo = pname;
     rev = "refs/tags/${version}";
-    hash = "sha256-PIImQZ1ymazsOg8qmlO91tNYHwXqK/d8AuKPsWYvh0w=";
+    hash = "sha256-KBly/aeHHZh7mL8MJ9gmxbqS7PmR4sedtBY/2HCXt54=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "remove-asynctest.patch";
-      url = "https://github.com/mosquito/aiofile/commit/9253ca42022f17f630ccfb6811f67876910f8b13.patch";
-      hash = "sha256-yMRfqEbdxApFypEj27v1zTgF/4kuLf5aS/+clo3mfZo=";
-    })
-  ];
-
-  propagatedBuildInputs = [
-    caio
-  ];
+  propagatedBuildInputs = [ caio ];
 
   nativeCheckInputs = [
     aiomisc
+    aiomisc-pytest
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "aiofile"
-  ];
+  pythonImportsCheck = [ "aiofile" ];
 
   disabledTests = [
     # Tests (SystemError) fails randomly during nix-review
@@ -63,6 +53,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "File operations with asyncio support";
     homepage = "https://github.com/mosquito/aiofile";
+    changelog = "https://github.com/aiokitchen/aiomisc/blob/master/CHANGELOG.md";
     license = licenses.asl20;
     maintainers = with maintainers; [ fab ];
   };

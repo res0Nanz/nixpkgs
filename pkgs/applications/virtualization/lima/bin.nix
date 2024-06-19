@@ -9,31 +9,31 @@
 }:
 
 let
-  version = "0.14.2";
+  version = "0.22.0";
 
   dist = {
     aarch64-darwin = rec {
       archSuffix = "Darwin-arm64";
       url = "https://github.com/lima-vm/lima/releases/download/v${version}/lima-${version}-${archSuffix}.tar.gz";
-      sha256 = "8334d83ca9555271b9843040066057dd8462a774f60dfaedbe97fae3834c3894";
+      sha256 = "271e0224d3e678450424abd4e6766a14ea52b146824bf8cfac7a0f486ceb2a0c";
     };
 
     x86_64-darwin = rec {
       archSuffix = "Darwin-x86_64";
       url = "https://github.com/lima-vm/lima/releases/download/v${version}/lima-${version}-${archSuffix}.tar.gz";
-      sha256 = "3866113c92619f0041ff6fc68fef2bf16e751058b9237289b2bea8fb960bdab0";
+      sha256 = "f2d331ef783e0bb00e193efc3d5c9438df5d284b1cbac771e5d239c3459b2b3d";
     };
 
     aarch64-linux = rec {
       archSuffix = "Linux-aarch64";
       url = "https://github.com/lima-vm/lima/releases/download/v${version}/lima-${version}-${archSuffix}.tar.gz";
-      sha256 = "373be7ebcf5932570c384c6bfb159cd418011b98a18c26ba0467827dad302230";
+      sha256 = "8c5c6dc21fae19c5645bf8db8f441aeab7fba21fbe882b2b9db58c126d07846b";
     };
 
     x86_64-linux = rec {
       archSuffix = "Linux-x86_64";
       url = "https://github.com/lima-vm/lima/releases/download/v${version}/lima-${version}-${archSuffix}.tar.gz";
-      sha256 = "44cae71eae65673afcc22c557f6385aa98792aecbb43195de48217581ae39143";
+      sha256 = "58e66114ae1e991512a86b6952ab3a1ffe0e12e08199a9a3ea13c3d2f24b307e";
     };
   };
 in
@@ -92,14 +92,10 @@ stdenvNoCC.mkDerivation {
       X86_64_LINUX_SHA256=$(cat SHA256SUMS | awk '/Linux-x86_64/{print $1}')
 
       # reset version first so that all platforms are always updated and in sync
-      update-source-version lima-bin 0 ${lib.fakeSha256} --file=${lima-bin} --system=aarch64-darwin
-      update-source-version lima-bin $LATEST_VERSION $AARCH64_DARWIN_SHA256 --file=${lima-bin} --system=aarch64-darwin
-      update-source-version lima-bin 0 ${lib.fakeSha256} --file=${lima-bin} --system=x86_64-darwin
-      update-source-version lima-bin $LATEST_VERSION $X86_64_DARWIN_SHA256 --file=${lima-bin} --system=x86_64-darwin
-      update-source-version lima-bin 0 ${lib.fakeSha256} --file=${lima-bin} --system=aarch64-linux
-      update-source-version lima-bin $LATEST_VERSION $AARCH64_LINUX_SHA256 --file=${lima-bin} --system=aarch64-linux
-      update-source-version lima-bin 0 ${lib.fakeSha256} --file=${lima-bin} --system=x86_64-linux
-      update-source-version lima-bin $LATEST_VERSION $X86_64_LINUX_SHA256 --file=${lima-bin} --system=x86_64-linux
+      update-source-version lima-bin $LATEST_VERSION $AARCH64_DARWIN_SHA256 --file=${lima-bin} --ignore-same-version --system=aarch64-darwin
+      update-source-version lima-bin $LATEST_VERSION $X86_64_DARWIN_SHA256 --file=${lima-bin} --ignore-same-version --system=x86_64-darwin
+      update-source-version lima-bin $LATEST_VERSION $AARCH64_LINUX_SHA256 --file=${lima-bin} --ignore-same-version --system=aarch64-linux
+      update-source-version lima-bin $LATEST_VERSION $X86_64_LINUX_SHA256 --file=${lima-bin} --ignore-same-version --system=x86_64-linux
       rm SHA256SUMS
     '';
 
@@ -108,5 +104,6 @@ stdenvNoCC.mkDerivation {
     description = "Linux virtual machines (on macOS, in most cases)";
     license = licenses.asl20;
     maintainers = with maintainers; [ tricktron ];
+    platforms = platforms.linux ++ platforms.darwin;
   };
 }

@@ -1,14 +1,15 @@
-{ lib
-, aiohttp
-, buildPythonPackage
-, fetchFromGitHub
-, fetchpatch
-, pytestCheckHook
-, pythonOlder
-, pythonAtLeast
-, poetry-core
-, pytest-aiohttp
-, pytest-asyncio
+{
+  lib,
+  aiohttp,
+  buildPythonPackage,
+  fetchFromGitHub,
+  fetchpatch,
+  pytestCheckHook,
+  pythonOlder,
+  pythonAtLeast,
+  poetry-core,
+  pytest-aiohttp,
+  pytest-asyncio,
 }:
 
 buildPythonPackage rec {
@@ -21,7 +22,7 @@ buildPythonPackage rec {
     owner = "dermotduffy";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-arcnpCQsRuiWCrAz/t4TCjTe8DRDtRuzYp8k7nnjGDk=";
+    hash = "sha256-arcnpCQsRuiWCrAz/t4TCjTe8DRDtRuzYp8k7nnjGDk=";
   };
 
   patches = [
@@ -32,13 +33,9 @@ buildPythonPackage rec {
     })
   ];
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  nativeBuildInputs = [ poetry-core ];
 
-  propagatedBuildInputs = [
-    aiohttp
-  ];
+  propagatedBuildInputs = [ aiohttp ];
 
   nativeCheckInputs = [
     pytest-asyncio

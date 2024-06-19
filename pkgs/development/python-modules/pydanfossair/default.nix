@@ -1,17 +1,19 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pydanfossair";
   version = "0.2.0";
+  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "JonasPed";
     repo = "pydanfoss-air";
     rev = "v${version}";
-    sha256 = "sha256-WTRiEQbd3wwNAz1gk0rS3khy6lg61rcGZQTMlBc0uO8=";
+    hash = "sha256-WTRiEQbd3wwNAz1gk0rS3khy6lg61rcGZQTMlBc0uO8=";
   };
 
   # Project has no tests

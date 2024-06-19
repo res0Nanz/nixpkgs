@@ -1,14 +1,14 @@
-{ lib, stdenv, clang14Stdenv, fetchFromGitHub, openssl, sqlite }:
+{ lib, stdenv, fetchFromGitHub, openssl, sqlite }:
 
-(if stdenv.isDarwin then clang14Stdenv else stdenv).mkDerivation rec {
+stdenv.mkDerivation rec {
   pname = "signalbackup-tools";
-  version = "20230307-1";
+  version = "20240610";
 
   src = fetchFromGitHub {
     owner = "bepaald";
     repo = pname;
     rev = version;
-    hash = "sha256-+FjjGsYMmleN+TDKFAsvC9o81gVhZHIrUgrWuzksxZU=";
+    hash = "sha256-txtOCw7fakQavzpTJrVbelZdEw2mYNe9lb8p1zH6dyw=";
   };
 
   postPatch = ''
@@ -32,6 +32,7 @@
 
   meta = with lib; {
     description = "Tool to work with Signal Backup files";
+    mainProgram = "signalbackup-tools";
     homepage = "https://github.com/bepaald/signalbackup-tools";
     license = licenses.gpl3Only;
     maintainers = [ maintainers.malo ];

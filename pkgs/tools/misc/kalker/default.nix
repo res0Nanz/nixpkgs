@@ -1,21 +1,23 @@
 { lib
-, fetchFromGitHub
-, gcc
-, gmp, mpfr, libmpc
 , rustPlatform
+, fetchFromGitHub
+, gmp
+, mpfr
+, libmpc
 }:
+
 rustPlatform.buildRustPackage rec {
   pname = "kalker";
-  version = "2.0.0";
+  version = "2.2.0";
 
   src = fetchFromGitHub {
     owner = "PaddiM8";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-D7FlX72fcbeVtQ/OtK2Y3P1hZ5Bmowa04up5rTTXDDU=";
+    hash = "sha256-Ri0Os+/AqGWgf/2V5D7xvelOC3JTOMjNzjq56mhA3G4=";
   };
 
-  cargoSha256 = "sha256-r20kQG6YeNGGb7ovYaAx+4DGijZSmf5YoIYh3z5zOpk=";
+  cargoHash = "sha256-0+NYbVMIUarLppBZu6mtyGd+2fvkjEUq0TX7urBq3XI=";
 
   buildInputs = [ gmp mpfr libmpc ];
 
@@ -25,17 +27,18 @@ rustPlatform.buildRustPackage rec {
     moveToOutput "lib" "$lib"
   '';
 
-  CARGO_FEATURE_USE_SYSTEM_LIBS = "1";
+  env.CARGO_FEATURE_USE_SYSTEM_LIBS = "1";
 
   meta = with lib; {
     homepage = "https://kalker.strct.net";
     changelog = "https://github.com/PaddiM8/kalker/releases/tag/v${version}";
-    description = "A command line calculator";
+    description = "Command line calculator";
     longDescription = ''
       A command line calculator that supports math-like syntax with user-defined
       variables, functions, derivation, integration, and complex numbers
     '';
     license = licenses.mit;
-    maintainers = with maintainers; [ lovesegfault ];
+    maintainers = with maintainers; [ figsoda lovesegfault ];
+    mainProgram = "kalker";
   };
 }

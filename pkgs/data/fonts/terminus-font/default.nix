@@ -24,9 +24,12 @@ stdenv.mkDerivation rec {
   '';
 
   installTargets = [ "install" "install-otb" "fontdir" ];
+  # fontdir depends on the previous two targets, but this is not known
+  # to make, so we need to disable parallelism:
+  enableParallelInstalling = false;
 
   meta = with lib; {
-    description = "A clean fixed width font";
+    description = "Clean fixed width font";
     longDescription = ''
       Terminus Font is designed for long (8 and more hours per day) work
       with computers. Version 4.30 contains 850 characters, covers about

@@ -5,13 +5,13 @@
 
 stdenv.mkDerivation rec {
   pname = "nchat";
-  version = "3.17";
+  version = "3.67";
 
   src = fetchFromGitHub {
     owner = "d99kris";
     repo = "nchat";
     rev = "v${version}";
-    hash = "sha256-BtWKt8paI0gCGSzLYN8x3Yp5MUpwCb2vBGcGQG2aumY=";
+    hash = "sha256-PhvZejtSoDptzoMP5uIe6T0Ws/bQQXVuYH9uoZo3JsI=";
   };
 
   postPatch = ''
@@ -28,7 +28,7 @@ stdenv.mkDerivation rec {
     readline
     sqlite
     zlib
-  ] ++ lib.optional stdenv.isDarwin [ AppKit Cocoa Foundation ];
+  ] ++ lib.optionals stdenv.isDarwin [ AppKit Cocoa Foundation ];
 
   cmakeFlags = [
     "-DHAS_WHATSAPP=OFF" # go module build required
@@ -36,6 +36,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "Terminal-based chat client with support for Telegram and WhatsApp";
+    mainProgram = "nchat";
     homepage = "https://github.com/d99kris/nchat";
     license = licenses.mit;
     maintainers = with maintainers; [ sikmir ];

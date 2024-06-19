@@ -1,14 +1,24 @@
-{ lib, buildPythonPackage, fetchFromGitHub, pyyaml, jsonschema, six, pytestCheckHook, mock }:
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pyyaml,
+  jsonschema,
+  six,
+  pytestCheckHook,
+  mock,
+}:
 
 buildPythonPackage rec {
   pname = "swagger-spec-validator";
   version = "2.7.4";
+  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Yelp";
     repo = "swagger_spec_validator";
     rev = "v${version}";
-    sha256 = "sha256-7+kFmtzeze0QlGf6z/M4J4F7z771a5NWewB1S3+bxn4=";
+    hash = "sha256-7+kFmtzeze0QlGf6z/M4J4F7z771a5NWewB1S3+bxn4=";
   };
 
   propagatedBuildInputs = [

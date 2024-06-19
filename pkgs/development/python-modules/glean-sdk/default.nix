@@ -1,43 +1,51 @@
-{ stdenv
-, lib
-, buildPythonPackage
-, cargo
-, cffi
-, fetchPypi
-, glean-parser
-, iso8601
-, pytest-localserver
-, pytestCheckHook
-, pythonOlder
-, rustc
-, rustPlatform
-, semver
-, setuptools-rust
+{
+  stdenv,
+  lib,
+  buildPythonPackage,
+  cargo,
+  cffi,
+  fetchPypi,
+  glean-parser,
+  iso8601,
+  lmdb,
+  pkg-config,
+  pytest-localserver,
+  pytestCheckHook,
+  python,
+  pythonOlder,
+  rustc,
+  rustPlatform,
+  semver,
+  setuptools-rust,
 }:
 
 buildPythonPackage rec {
   pname = "glean-sdk";
-  version = "52.2.0";
+  version = "52.7.0";
+  format = "setuptools";
 
   disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-iW432YtZtRGUWia33Lsnu+aQuedhBJdh8dZ30FPg6Vk=";
+    hash = "sha256-sLjdGHiS7Co/oA9gQyAFkD14tAYjmwjWcPr4CRrzw/0=";
   };
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit src;
     name = "${pname}-${version}";
-    hash = "sha256-/7qKIQglNKGveKFtPeqd35Mq2hH/20BGTgDBgip4PnI=";
+    hash = "sha256-5TlgWcLmjklxhtDbB0aRF71iIRTJwetFj1Jii1DGdvU=";
   };
 
   nativeBuildInputs = [
     cargo
+    pkg-config
     rustc
     rustPlatform.cargoSetupHook
     setuptools-rust
   ];
+
+  buildInputs = [ lmdb ];
 
   propagatedBuildInputs = [
     cffi
@@ -54,11 +62,14 @@ buildPythonPackage rec {
   disabledTests = [
     # RuntimeError: No ping received.
     "test_client_activity_api"
+    "test_flipping_upload_enabled_respects_order_of_events"
   ];
 
-  pythonImportsCheck = [
-    "glean"
-  ];
+  postInstallCheck = lib.optionalString stdenv.hostPlatform.isElf ''
+    readelf -a $out/${python.sitePackages}/glean/libglean_ffi.so | grep -F 'Shared library: [liblmdb.so'
+  '';
+
+  pythonImportsCheck = [ "glean" ];
 
   meta = with lib; {
     broken = stdenv.isDarwin;

@@ -1,5 +1,6 @@
 { lib
 , python3
+, fetchPypi
 , substituteAll
 , ffmpeg
 , installShellFiles
@@ -7,16 +8,16 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "you-get";
-  version = "0.4.1650";
+  version = "0.4.1700";
   format = "setuptools";
 
   # Tests aren't packaged, but they all hit the real network so
   # probably aren't suitable for a build environment anyway.
   doCheck = false;
 
-  src = python3.pkgs.fetchPypi {
+  src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-s8lEz3pjzEaMzMiBbc5/wAjC5rW6Uq7+XOIIGBijrUc=";
+    sha256 = "sha256-XNIUkgEqRGrBtSxvfkSUSqxltZ6ZdkWoTc9kz4BD6Zw=";
   };
 
   patches = [
@@ -42,10 +43,11 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   meta = with lib; {
-    description = "A tiny command line utility to download media contents from the web";
+    description = "Tiny command line utility to download media contents from the web";
     homepage = "https://you-get.org";
     changelog = "https://github.com/soimort/you-get/raw/v${version}/CHANGELOG.rst";
     license = licenses.mit;
     maintainers = with maintainers; [ ryneeverett ];
+    mainProgram = "you-get";
   };
 }

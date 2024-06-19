@@ -1,48 +1,45 @@
-{ lib
-, aiohttp
-, aresponses
-, buildPythonPackage
-, fetchFromGitHub
-, poetry-core
-, pytest-aiohttp
-, pytest-asyncio
-, pytestCheckHook
-, python-engineio
-, python-socketio
-, pythonOlder
-, websockets
+{
+  lib,
+  aiohttp,
+  aresponses,
+  buildPythonPackage,
+  certifi,
+  fetchFromGitHub,
+  poetry-core,
+  pytest-aiohttp,
+  pytest-asyncio,
+  pytestCheckHook,
+  python-engineio,
+  python-socketio,
+  pythonOlder,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "aioambient";
-  version = "2022.10.0";
-  format = "pyproject";
+  version = "2024.01.0";
+  pyproject = true;
 
   disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "bachya";
-    repo = pname;
+    repo = "aioambient";
     rev = "refs/tags/${version}";
-    hash = "sha256-Oppi4J0TuLbqwVn1Hpa4xcU9c/I+YDP3E0VXwiP8a/w=";
+    hash = "sha256-eqZVY0L+2BWF7cCXW/VLQYYXNPtUF6tJHQmeZNW1W5o=";
   };
 
-  postPatch = ''
-    # https://github.com/bachya/aioambient/pull/97
-    substituteInPlace pyproject.toml \
-      --replace 'websockets = ">=9.1,<11.0"' 'websockets = "*"'
-  '';
+  build-system = [ poetry-core ];
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
-
-  propagatedBuildInputs = [
+  dependencies = [
     aiohttp
+    certifi
     python-engineio
     python-socketio
     websockets
   ];
+
+  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     aresponses
@@ -52,13 +49,9 @@ buildPythonPackage rec {
   ];
 
   # Ignore the examples directory as the files are prefixed with test_
-  disabledTestPaths = [
-    "examples/"
-  ];
+  disabledTestPaths = [ "examples/" ];
 
-  pythonImportsCheck = [
-    "aioambient"
-  ];
+  pythonImportsCheck = [ "aioambient" ];
 
   meta = with lib; {
     description = "Python library for the Ambient Weather API";

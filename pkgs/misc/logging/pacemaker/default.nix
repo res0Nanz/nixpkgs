@@ -29,13 +29,13 @@
 
 stdenv.mkDerivation rec {
   pname = "pacemaker";
-  version = "2.1.5";
+  version = "2.1.7";
 
   src = fetchFromGitHub {
     owner = "ClusterLabs";
     repo = pname;
     rev = "Pacemaker-${version}";
-    sha256 = "sha256-vsHWNKCrHJIgXlJYyZZEUfuIUBnaejPrPCM1HrYOTKQ=";
+    sha256 = "sha256-cvCMIzeyP9oEzHpafOvCORYwWg6cH5qj3qXOUMW4nHA=";
   };
 
   nativeBuildInputs = [
@@ -94,7 +94,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://clusterlabs.org/pacemaker/";
-    description = "Pacemaker is an open source, high availability resource manager suitable for both small and large clusters.";
+    description = "Pacemaker is an open source, high availability resource manager suitable for both small and large clusters";
     license = licenses.gpl2Plus;
     platforms = platforms.linux;
     maintainers = with maintainers; [ ryantm astro ];

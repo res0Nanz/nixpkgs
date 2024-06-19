@@ -1,5 +1,4 @@
 { fetchurl
-, fetchpatch
 , stdenv
 , installShellFiles
 , lib
@@ -21,7 +20,8 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ pkg-config installShellFiles ];
-  buildInputs = [ libftdi1 libusb1 pciutils ]
+  buildInputs = [ libftdi1 libusb1 ]
+    ++ lib.optionals (!stdenv.isDarwin) [ pciutils ]
     ++ lib.optional jlinkSupport libjaylink;
 
   postPatch = ''
@@ -30,7 +30,8 @@ stdenv.mkDerivation rec {
   '';
 
   makeFlags = [ "PREFIX=$(out)" "libinstall" ]
-    ++ lib.optional jlinkSupport "CONFIG_JLINK_SPI=yes";
+    ++ lib.optional jlinkSupport "CONFIG_JLINK_SPI=yes"
+    ++ lib.optionals (stdenv.isDarwin && stdenv.isx86_64) [ "CONFIG_INTERNAL_X86=no" "CONFIG_INTERNAL_DMI=no" "CONFIG_RAYER_SPI=no" ];
 
   postInstall = ''
     install -Dm644 util/flashrom_udev.rules $out/lib/udev/rules.d/flashrom.rules
@@ -39,9 +40,9 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://www.flashrom.org";
     description = "Utility for reading, writing, erasing and verifying flash ROM chips";
-    license = licenses.gpl2;
+    license = licenses.gpl2Plus;
     maintainers = with maintainers; [ fpletz felixsinger ];
     platforms = platforms.all;
-    broken = stdenv.isDarwin; # requires DirectHW
+    mainProgram = "flashrom";
   };
 }

@@ -1,7 +1,7 @@
 { lib, stdenv, fetchFromGitHub, libfaketime, xorg }:
 
 stdenv.mkDerivation rec {
-  name = "siji-${version}";
+  pname = "siji";
   version = "2016-05-13";
 
   src = fetchFromGitHub {
@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/stark/siji";
-    description = "An iconic bitmap font based on Stlarch with additional glyphs";
+    description = "Iconic bitmap font based on Stlarch with additional glyphs";
     license = licenses.gpl2;
     platforms = platforms.all;
     maintainers = [ maintainers.asymmetric ];

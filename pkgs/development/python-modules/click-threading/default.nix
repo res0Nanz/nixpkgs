@@ -1,19 +1,21 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, pytest
-, click
-, isPy3k
-, futures ? null
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  pytest,
+  click,
+  isPy3k,
+  futures ? null,
 }:
 
 buildPythonPackage rec {
   pname = "click-threading";
   version = "0.5.0";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-rc/mI8AqWVwQfDFAcvZ6Inj+TrQLcsDRoskDzHivNDk=";
+    hash = "sha256-rc/mI8AqWVwQfDFAcvZ6Inj+TrQLcsDRoskDzHivNDk=";
   };
 
   nativeCheckInputs = [ pytest ];

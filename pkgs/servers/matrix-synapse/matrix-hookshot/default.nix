@@ -5,10 +5,13 @@
 , makeWrapper
 , matrix-sdk-crypto-nodejs
 , mkYarnPackage
-, rust
+, cargo
 , rustPlatform
+, rustc
 , napi-rs-cli
+, pkg-config
 , nodejs
+, openssl
 }:
 
 let
@@ -22,7 +25,7 @@ mkYarnPackage rec {
     owner = "matrix-org";
     repo = "matrix-hookshot";
     rev = data.version;
-    sha256 = data.srcHash;
+    hash = data.srcHash;
   };
 
   packageJSON = ./package.json;
@@ -35,17 +38,20 @@ mkYarnPackage rec {
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit src;
     name = "${pname}-${version}";
-    hash = "sha256-WolkDSS5wPxtltKzq4Er2nAQ0GrsF3imim3/Ge4eguQ=";
+    hash = data.cargoHash;
   };
 
   packageResolutions = {
     "@matrix-org/matrix-sdk-crypto-nodejs" = "${matrix-sdk-crypto-nodejs}/lib/node_modules/@matrix-org/matrix-sdk-crypto-nodejs";
   };
 
+  extraBuildInputs = [ openssl ];
+
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
-    rustPlatform.rust.cargo
-    rustPlatform.rust.rustc
+    pkg-config
+    cargo
+    rustc
     napi-rs-cli
     makeWrapper
   ];
@@ -53,7 +59,7 @@ mkYarnPackage rec {
   buildPhase = ''
     runHook preBuild
     cd deps/${pname}
-    napi build --target ${rust.toRustTargetSpec stdenv.targetPlatform} --dts ../src/libRs.d.ts --release ./lib
+    napi build --target ${stdenv.hostPlatform.rust.rustcTargetSpec} --dts ../src/libRs.d.ts --release ./lib
     yarn run build:app:fix-defs
     yarn run build:app
     yarn run build:web
@@ -66,11 +72,18 @@ mkYarnPackage rec {
         "$out/libexec/matrix-hookshot/deps/matrix-hookshot/lib/App/BridgeApp.js"
   '';
 
+  postFixup = ''
+    # Scrub reference to rustc
+    rm $out/libexec/matrix-hookshot/deps/matrix-hookshot/target/.rustc_info.json
+  '';
+
   doDist = false;
 
   meta = with lib; {
-    description = "A bridge between Matrix and multiple project management services, such as GitHub, GitLab and JIRA";
+    description = "Bridge between Matrix and multiple project management services, such as GitHub, GitLab and JIRA";
+    mainProgram = "matrix-hookshot";
     maintainers = with maintainers; [ chvp ];
     license = licenses.asl20;
+    platforms = platforms.linux;
   };
 }

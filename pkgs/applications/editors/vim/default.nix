@@ -15,7 +15,7 @@ in
 stdenv.mkDerivation {
   pname = "vim";
 
-  inherit (common) version src postPatch hardeningDisable enableParallelBuilding meta;
+  inherit (common) version outputs src postPatch hardeningDisable enableParallelBuilding enableParallelInstalling postFixup meta;
 
   nativeBuildInputs = [ gettext pkg-config ];
   buildInputs = [ ncurses bash gawk ]
@@ -26,18 +26,22 @@ stdenv.mkDerivation {
   configureFlags = [
     "--enable-multibyte"
     "--enable-nls"
-  ] ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+  ] ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) ([
     "vim_cv_toupper_broken=no"
     "--with-tlib=ncurses"
     "vim_cv_terminfo=yes"
     "vim_cv_tgetent=zero" # it does on native anyway
-    "vim_cv_timer_create=yes"
     "vim_cv_tty_group=tty"
     "vim_cv_tty_mode=0660"
     "vim_cv_getcwd_broken=no"
     "vim_cv_stat_ignores_slash=yes"
     "vim_cv_memmove_handles_overlap=yes"
-  ];
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "vim_cv_timer_create=no"
+    "vim_cv_timer_create_with_lrt=yes"
+  ] ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+    "vim_cv_timer_create=yes"
+  ]);
 
   # which.sh is used to for vim's own shebang patching, so make it find
   # binaries for the host platform.
@@ -50,14 +54,16 @@ stdenv.mkDerivation {
     ln -s $out/bin/vim $out/bin/vi
     mkdir -p $out/share/vim
     cp "${vimrc}" $out/share/vim/vimrc
+
+    # Prevent bugs in the upstream makefile from silently failing and missing outputs.
+    # Some of those are build-time requirements for other packages.
+    for tool in ex xxd vi view vimdiff; do
+      if [ ! -e "$out/bin/$tool" ]; then
+        echo "ERROR: install phase did not install '$tool'."
+        exit 1
+      fi
+    done
   '';
 
   __impureHostDeps = [ "/dev/ptmx" ];
-
-  # To fix the trouble in vim73, that it cannot cross-build with this patch
-  # to bypass a configure script check that cannot be done cross-building.
-  # http://groups.google.com/group/vim_dev/browse_thread/thread/66c02efd1523554b?pli=1
-  # patchPhase = ''
-  #   sed -i -e 's/as_fn_error.*int32.*/:/' src/auto/configure
-  # '';
 }

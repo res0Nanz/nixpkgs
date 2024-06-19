@@ -5,20 +5,21 @@
 , makeWrapper
 , python3
 , nix
+, unstableGitUpdater
 }:
 
 let
-  version = "unstable-2022-11-15";
+  version = "unstable-2024-03-25";
 
   src = fetchFromGitHub {
     owner = "jtojnar";
     repo = "nixpkgs-hammering";
-    rev = "1b038ef38fececb39b65a4cdfa7273ed9d9359b4";
-    hash = "sha256-5wZGGTahP1Tlu+WAgGx8Q9YnnHtyhfScl9j6X3W+Toc=";
+    rev = "6851ecea8c6da45870b7c06d6495cba3fb2d7c7c";
+    hash = "sha256-kr3zMr7aWt4W/+Jcol5Ctiq0KjXSxViPhGtyqvX9dqE=";
   };
 
   meta = with lib; {
-    description = "A set of nit-picky rules that aim to point out and explain common mistakes in nixpkgs package pull requests";
+    description = "Set of nit-picky rules that aim to point out and explain common mistakes in nixpkgs package pull requests";
     homepage = "https://github.com/jtojnar/nixpkgs-hammering";
     license = licenses.mit;
     maintainers = with maintainers; [ figsoda ];
@@ -28,7 +29,7 @@ let
     pname = "nixpkgs-hammering-rust-checks";
     inherit version src meta;
     sourceRoot = "${src.name}/rust-checks";
-    cargoHash = "sha256-YiC9mts6h15ZGdLKKmCVNNdTWDPtbDF0J5pwtjc6YKM=";
+    cargoHash = "sha256-QrtAalZClNc0ZN6iNqN9rFRQ7w68lEZPV5e25uXYToA=";
   };
 in
 
@@ -56,8 +57,9 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  passthru.updateScript = unstableGitUpdater { };
+
   meta = meta // {
     mainProgram = "nixpkgs-hammer";
   };
 }
-

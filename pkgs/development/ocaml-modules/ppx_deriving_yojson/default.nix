@@ -1,4 +1,4 @@
-{ lib, buildDunePackage, fetchFromGitHub, ppxlib, ounit
+{ lib, buildDunePackage, fetchFromGitHub, ocaml, ppxlib, ounit
 , ppx_deriving, yojson
 }:
 
@@ -27,11 +27,11 @@ buildDunePackage rec {
 
   propagatedBuildInputs = [ ppxlib ppx_deriving yojson ];
 
-  doCheck = true;
+  doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ ounit ];
 
   meta = {
-    description = "A Yojson codec generator for OCaml >= 4.04";
+    description = "Yojson codec generator for OCaml >= 4.04";
     inherit (src.meta) homepage;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];

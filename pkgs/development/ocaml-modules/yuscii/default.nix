@@ -13,6 +13,7 @@ buildDunePackage rec {
   version = "0.3.0";
 
   minimalOCamlVersion = "4.03";
+  duneVersion = "3";
 
   src = fetchzip {
     url = "https://github.com/mirage/yuscii/releases/download/v${version}/yuscii-v${version}.tbz";
@@ -30,7 +31,7 @@ buildDunePackage rec {
   doCheck = lib.versionAtLeast ocaml.version "4.08";
 
   meta = {
-    description = "A simple mapper between UTF-7 to Unicode according RFC2152";
+    description = "Simple mapper between UTF-7 to Unicode according RFC2152";
     license = lib.licenses.mit;
     homepage = "https://github.com/mirage/yuscii";
     maintainers = with lib.maintainers; [ ];

@@ -1,15 +1,15 @@
-{ lib, kernel, rtl8189es, fetchFromGitHub, fetchpatch }:
+{ lib, kernel, rtl8189es, fetchFromGitHub }:
 
 # rtl8189fs is a branch of the rtl8189es driver
 rtl8189es.overrideAttrs (drv: rec {
   name = "rtl8189fs-${kernel.version}-${version}";
-  version = "2022-10-30";
+  version = "2024-01-22";
 
   src = fetchFromGitHub {
     owner = "jwrdegoede";
     repo = "rtl8189ES_linux";
-    rev = "e58bd86c9d9408c648b1246a0dd76b16856ec172";
-    sha256 = "sha256-KKly72N6ACBTB4CSBM6Q/S1wGMTg5NZA3QYslYPNUr8=";
+    rev = "5d523593f41c0b8d723c6aa86b217ee1d0965786";
+    sha256 = "sha256-pziaUM6XfF4Tt9yfWUnLUiTw+sw6uZrr1HcaXdRQ31E=";
   };
 
   meta = with lib; {

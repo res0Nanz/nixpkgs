@@ -1,4 +1,4 @@
-{ lib, fetchurl, perlPackages, wrapGAppsHook,
+{ lib, fetchurl, perlPackages, wrapGAppsHook3, fetchpatch,
   # libs
   librsvg, sane-backends, sane-frontends,
   # runtime dependencies
@@ -17,7 +17,18 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-NGz6DUa7TdChpgwmD9pcGdvYr3R+Ft3jPPSJpybCW4Q=";
   };
 
-  nativeBuildInputs = [ wrapGAppsHook ];
+  patches = [
+    # fixes warnings during tests. See https://sourceforge.net/p/gscan2pdf/bugs/421
+    (fetchpatch {
+      name = "0001-Remove-given-and-when-keywords-and-operator.patch";
+      url = "https://sourceforge.net/p/gscan2pdf/bugs/_discuss/thread/602a7cedfd/1ea4/attachment/0001-Remove-given-and-when-keywords-and-operator.patch";
+      hash = "sha256-JtrHUkfEKnDhWfEVdIdYVlr5b/xChTzsrrPmruLaJ5M=";
+    })
+    # fixes an error with utf8 file names. See https://sourceforge.net/p/gscan2pdf/bugs/400
+    ./image-utf8-fix.patch
+  ];
+
+  nativeBuildInputs = [ wrapGAppsHook3 ];
 
   buildInputs =
     [ librsvg sane-backends sane-frontends ] ++
@@ -102,6 +113,18 @@ perlPackages.buildPerlPackage rec {
   ]);
 
   checkPhase = ''
+    # Temporarily disable a test failing after a patch imagemagick update.
+    # It might only due to the reporting and matching used in the test.
+    # See https://github.com/NixOS/nixpkgs/issues/223446
+    # See https://sourceforge.net/p/gscan2pdf/bugs/417/
+    #
+    #   Failed test 'valid TIFF created'
+    #   at t/131_save_tiff.t line 44.
+    #                   'test.tif TIFF 70x46 70x46+0+0 8-bit sRGB 10024B 0.000u 0:00.000
+    # '
+    #     doesn't match '(?^:test.tif TIFF 70x46 70x46\+0\+0 8-bit sRGB [7|9][.\d]+K?B)'
+    rm t/131_save_tiff.t
+
     # Temporarily disable a dubiously failing test:
     # t/169_import_scan.t ........................... 1/1
     # #   Failed test 'variable-height scan imported with expected size'
@@ -123,9 +146,10 @@ perlPackages.buildPerlPackage rec {
   '';
 
   meta = {
-    description = "A GUI to produce PDFs or DjVus from scanned documents";
+    description = "GUI to produce PDFs or DjVus from scanned documents";
     homepage = "https://gscan2pdf.sourceforge.net/";
     license = licenses.gpl3;
     maintainers = with maintainers; [ pacien ];
+    mainProgram = "gscan2pdf";
   };
 }

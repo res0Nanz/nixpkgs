@@ -40,13 +40,13 @@
 
 stdenv.mkDerivation rec {
   pname = "rpm-ostree";
-  version = "2023.2";
+  version = "2024.6";
 
   outputs = [ "out" "dev" "man" "devdoc" ];
 
   src = fetchurl {
     url = "https://github.com/coreos/${pname}/releases/download/v${version}/${pname}-${version}.tar.xz";
-    hash = "sha256-/C5la0b1plfqnsfSnfoSkSROIlAcvAfeg4m/PYV2UnY=";
+    hash = "sha256-8jHT4ZQ8vcZ4S3qBNMhCPKSHbFIJCCXNWZVmgsLWxSs=";
   };
 
   nativeBuildInputs = [
@@ -114,14 +114,12 @@ stdenv.mkDerivation rec {
     env NOCONFIGURE=1 ./autogen.sh
   '';
 
-  # https://github.com/NixOS/nixpkgs/issues/201254
-  NIX_LDFLAGS = lib.optionalString (stdenv.isLinux && stdenv.isAarch64 && stdenv.cc.isGNU) "-lgcc";
-
   meta = with lib; {
-    description = "A hybrid image/package system. It uses OSTree as an image format, and uses RPM as a component model";
+    description = "Hybrid image/package system. It uses OSTree as an image format, and uses RPM as a component model";
     homepage = "https://coreos.github.io/rpm-ostree/";
     license = licenses.lgpl2Plus;
     maintainers = with maintainers; [ copumpkin ];
     platforms = platforms.linux;
+    mainProgram = "rpm-ostree";
   };
 }

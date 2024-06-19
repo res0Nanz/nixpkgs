@@ -1,60 +1,84 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, awkward
-, dask
-, hatch-vcs
-, hatchling
-, pyarrow
-, pytestCheckHook
+{
+  lib,
+  awkward,
+  buildPythonPackage,
+  cachetools,
+  dask,
+  dask-histogram,
+  distributed,
+  fetchFromGitHub,
+  hatch-vcs,
+  hatchling,
+  hist,
+  pandas,
+  pyarrow,
+  pytestCheckHook,
+  pythonOlder,
+  pythonRelaxDepsHook,
+  typing-extensions,
+  uproot,
 }:
 
 buildPythonPackage rec {
   pname = "dask-awkward";
-  version = "2023.1.0";
-  format = "pyproject";
+  version = "2024.6.0";
+  pyproject = true;
 
   disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "dask-contrib";
-    repo = pname;
-    rev = version;
-    hash = "sha256-q0mBd4yelnNL7rMWfilituo9h/xmLLLndSCBdY2egEQ=";
+    repo = "dask-awkward";
+    rev = "refs/tags/${version}";
+    hash = "sha256-m/KvPo4IGn19sA5RcA/+OhLMCDBU+9BbMQtK3gHOoEc=";
   };
 
-  nativeBuildInputs = [
+  pythonRelaxDeps = [ "awkward" ];
+
+  build-system = [
     hatch-vcs
     hatchling
+    pythonRelaxDepsHook
   ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     awkward
+    cachetools
     dask
+    typing-extensions
   ];
 
-  SETUPTOOLS_SCM_PRETEND_VERSION = version;
+  passthru.optional-dependencies = {
+    io = [ pyarrow ];
+  };
 
   checkInputs = [
+    dask-histogram
+    distributed
+    hist
+    pandas
     pytestCheckHook
-    pyarrow
+    uproot
+  ] ++ lib.flatten (builtins.attrValues passthru.optional-dependencies);
+
+  pythonImportsCheck = [ "dask_awkward" ];
+
+  disabledTests = [
+    # Tests require network access
+    "test_remote_double"
+    "test_remote_single"
+    "test_from_text"
+    # ValueError: not a ROOT file: first four bytes...
+    "test_basic_root_works"
   ];
 
-  pythonImportsCheck = [
-    "dask_awkward"
-  ];
+  __darwinAllowLocalNetworking = true;
 
-  pytestFlagsArray = [
-    # require internet
-    "--deselect=tests/test_parquet.py::test_remote_double"
-    "--deselect=tests/test_parquet.py::test_remote_single"
-  ];
-
-  meta = with lib; {
+  meta = {
     description = "Native Dask collection for awkward arrays, and the library to use it";
     homepage = "https://github.com/dask-contrib/dask-awkward";
-    license = licenses.bsd3;
-    maintainers = with maintainers; [ veprbl ];
+    changelog = "https://github.com/dask-contrib/dask-awkward/releases/tag/${version}";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ veprbl ];
   };
 }

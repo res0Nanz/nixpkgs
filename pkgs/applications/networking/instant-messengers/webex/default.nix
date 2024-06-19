@@ -25,7 +25,7 @@
 , udev
 , libxcb
 , libxkbcommon
-, libxcrypt
+, libxcrypt-legacy
 , lshw
 , mesa
 , nspr
@@ -49,18 +49,23 @@
 , xcbutilrenderutil
 , xcbutilwm
 , p7zip
+, tbb
 , wayland
 , libXScrnSaver
 }:
 
 stdenv.mkDerivation rec {
   pname = "webex";
-  version = "43.2.0.25211";
+  version = "44.5.0.29672";
 
   src = fetchurl {
-    url = "https://binaries.webex.com/WebexDesktop-Ubuntu-Gold/20230214022524/Webex_ubuntu.7z";
-    sha256 = "c58a0da26c8f64302cc612c60980dbd68c074d6d8a567b3d870d7d6d06b420ad";
+    url = "https://binaries.webex.com/WebexDesktop-Ubuntu-Gold/20240521091053/Webex_ubuntu.7z";
+    sha256 = "e155c280d15f2db4b5e638f244319dbec938d6de267f2fed1b4ba2b55fbb8a9b";
   };
+
+  nativeBuildInputs = [
+    p7zip
+  ];
 
   buildInputs = [
     alsa-lib
@@ -92,7 +97,7 @@ stdenv.mkDerivation rec {
     udev
     libxcb
     libxkbcommon
-    libxcrypt
+    libxcrypt-legacy
     libX11
     libXcomposite
     libXcursor
@@ -110,7 +115,7 @@ stdenv.mkDerivation rec {
     xcbutilkeysyms
     xcbutilrenderutil
     xcbutilwm
-    p7zip
+    tbb
     wayland
   ];
 
@@ -167,7 +172,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "The all-in-one app to call, meet, message, and get work done";
+    description = "All-in-one app to call, meet, message, and get work done";
     homepage = "https://webex.com/";
     downloadPage = "https://www.webex.com/downloads.html";
     license = licenses.unfree;

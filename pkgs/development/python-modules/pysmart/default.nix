@@ -1,16 +1,19 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, smartmontools
-, humanfriendly
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  chardet,
+  humanfriendly,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools-scm,
+  smartmontools,
 }:
 
 buildPythonPackage rec {
   pname = "pysmart";
-  version = "1.2.3";
-  format = "setuptools";
+  version = "1.3.0";
+  format = "pyproject";
 
   disabled = pythonOlder "3.7";
 
@@ -18,7 +21,7 @@ buildPythonPackage rec {
     owner = "truenas";
     repo = "py-SMART";
     rev = "refs/tags/v${version}";
-    hash = "sha256-5VoZEgHWmHUDkm2KhBP0gfmhOJUYJUqDLWBp/kU1404=";
+    hash = "sha256-1k+5XnIT/AfZmzKUxkyU/uc0eW05CvugpY6OdJCoALc=";
   };
 
   postPatch = ''
@@ -27,16 +30,15 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [
+    chardet
     humanfriendly
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  nativeBuildInputs = [ setuptools-scm ];
 
-  pythonImportsCheck = [
-    "pySMART"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  pythonImportsCheck = [ "pySMART" ];
 
   meta = with lib; {
     description = "Wrapper for smartctl (smartmontools)";

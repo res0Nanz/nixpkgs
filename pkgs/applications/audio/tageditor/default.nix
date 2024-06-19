@@ -17,13 +17,13 @@
 
 stdenv.mkDerivation rec {
   pname = "tageditor";
-  version = "3.7.8";
+  version = "3.9.0";
 
   src = fetchFromGitHub {
     owner = "martchus";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-/34KS6nxpIsKEklSRpO+AmGAdpJhapoGe24DCCodU38=";
+    hash = "sha256-caki8WVnu8ELE2mXwRvT9TTTXCtMZEa0E3KVpHl05jg=";
   };
 
   nativeBuildInputs = [
@@ -46,9 +46,10 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/Martchus/tageditor";
-    description = "A tag editor with Qt GUI and command-line interface supporting MP4/M4A/AAC (iTunes), ID3, Vorbis, Opus, FLAC and Matroska";
+    description = "Tag editor with Qt GUI and command-line interface supporting MP4/M4A/AAC (iTunes), ID3, Vorbis, Opus, FLAC and Matroska";
     license = licenses.gpl2;
     maintainers = [ maintainers.matthiasbeyer ];
     platforms = platforms.linux;
+    mainProgram = "tageditor";
   };
 }

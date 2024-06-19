@@ -1,7 +1,7 @@
 { fetchFromGitHub, fetchgit, fetchHex, rebar3Relx, buildRebar3, rebar3-proper
 , stdenv, writeScript, lib, erlang }:
 let
-  version = "0.46.2";
+  version = "0.52.0";
   owner = "erlang-ls";
   repo = "erlang_ls";
   deps = import ./rebar-deps.nix {
@@ -24,16 +24,15 @@ rebar3Relx {
   inherit version;
   src = fetchFromGitHub {
     inherit owner repo;
-    sha256 = "sha256-J0Qa8s8v/KT4/Jaj9JYsfvzviMUx8FnX0nMoeH8bkB8=";
+    hash = "sha256-tV7M8y0R+BN5ATxM03K0/gtHgITI9KxtvA7o0ft8RuE=";
     rev = version;
   };
   releaseType = "escript";
   beamDeps = builtins.attrValues deps;
 
-  # Skip "els_hover_SUITE" test for Erlang/OTP 25+ while upstream hasn't fixed it
-  # https://github.com/erlang-ls/erlang_ls/pull/1402
-  postPatch = lib.optionalString (lib.versionOlder "25" erlang.version) ''
-    rm apps/els_lsp/test/els_hover_SUITE.erl
+  # https://github.com/erlang-ls/erlang_ls/issues/1429
+  postPatch =  ''
+    rm apps/els_lsp/test/els_diagnostics_SUITE.erl
   '';
 
   buildPlugins = [ rebar3-proper ];
@@ -47,16 +46,13 @@ rebar3Relx {
   '';
   # tests seem to be a bit flaky on darwin, skip them for now
   doCheck = !stdenv.isDarwin;
-  installPhase = ''
-    mkdir -p $out/bin
-    cp _build/default/bin/erlang_ls $out/bin/
-    cp _build/dap/bin/els_dap $out/bin/
-  '';
+  installFlags = [ "PREFIX=$(out)" ];
   meta = with lib; {
     homepage = "https://github.com/erlang-ls/erlang_ls";
-    description = "The Erlang Language Server";
+    description = "Erlang Language Server";
     platforms = platforms.unix;
     license = licenses.asl20;
+    mainProgram = "erlang_ls";
   };
   passthru.updateScript = writeScript "update.sh" ''
     #!/usr/bin/env nix-shell

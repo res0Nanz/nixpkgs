@@ -1,22 +1,23 @@
-{ lib
-, stdenv
-, buildPythonPackage
-, python
-, cairocffi
-, django
-, django_tagging
-, fetchFromGitHub
-, fetchpatch
-, gunicorn
-, mock
-, pyparsing
-, python-memcached
-, pythonOlder
-, pytz
-, six
-, txamqp
-, urllib3
-, whisper
+{
+  lib,
+  stdenv,
+  buildPythonPackage,
+  python,
+  cairocffi,
+  django,
+  django-tagging,
+  fetchFromGitHub,
+  fetchpatch,
+  gunicorn,
+  mock,
+  pyparsing,
+  python-memcached,
+  pythonOlder,
+  pytz,
+  six,
+  txamqp,
+  urllib3,
+  whisper,
 }:
 
 buildPythonPackage rec {
@@ -37,19 +38,19 @@ buildPythonPackage rec {
     (fetchpatch {
       name = "CVE-2022-4730.CVE-2022-4729.CVE-2022-4728.part-1.patch";
       url = "https://github.com/graphite-project/graphite-web/commit/9c626006eea36a9fd785e8f811359aebc9774970.patch";
-      sha256 = "sha256-JMmdhLqsaRhUG2FsH+yPNl+cR7O2YLfKFliL2GU0aAk=";
+      hash = "sha256-JMmdhLqsaRhUG2FsH+yPNl+cR7O2YLfKFliL2GU0aAk=";
     })
     (fetchpatch {
       name = "CVE-2022-4730.CVE-2022-4729.CVE-2022-4728.part-2.patch";
       url = "https://github.com/graphite-project/graphite-web/commit/2f178f490e10efc03cd1d27c72f64ecab224eb23.patch";
-      sha256 = "sha256-NL7K5uekf3NlLa58aFFRPJT9ktjqBeNlWC4Htd0fRQ0=";
+      hash = "sha256-NL7K5uekf3NlLa58aFFRPJT9ktjqBeNlWC4Htd0fRQ0=";
     })
   ];
 
   propagatedBuildInputs = [
     cairocffi
     django
-    django_tagging
+    django-tagging
     gunicorn
     pyparsing
     python-memcached
@@ -92,14 +93,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  pythonImportsCheck = [
-    "graphite"
-  ];
+  pythonImportsCheck = [ "graphite" ];
 
   meta = with lib; {
     description = "Enterprise scalable realtime graphing";
     homepage = "http://graphiteapp.org/";
     license = licenses.asl20;
-    maintainers = with maintainers; [ offline basvandijk ];
+    maintainers = with maintainers; [
+      offline
+      basvandijk
+    ];
   };
 }

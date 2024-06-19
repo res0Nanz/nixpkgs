@@ -1,5 +1,6 @@
 { lib
 , fetchFromGitHub
+, fetchpatch
 , git
 , libiconv
 , ncurses
@@ -14,16 +15,29 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "git-branchless";
-  version = "0.7.0";
+  version = "0.8.0";
 
   src = fetchFromGitHub {
     owner = "arxanas";
     repo = "git-branchless";
     rev = "v${version}";
-    sha256 = "sha256-t3nzElicRbOTI+1nD+CGQk9u83FUUNgJ0OpylPZdlOs=";
+    hash = "sha256-ev56NzrEF7xm3WmR2a0pHPs69Lvmb4He7+kIBYiJjKY=";
   };
 
-  cargoHash = "sha256-RfZnPQN+BSJ2YmCEMCPWY477sJue/L++3aL+U15C1Ro=";
+  patches = [
+    # Fix tests with Git 2.44.0+
+    (fetchpatch {
+      url = "https://github.com/arxanas/git-branchless/pull/1245.patch";
+      hash = "sha256-gBm0A478Uhg9IQVLQppvIeTa8s1yHUMddxiUbpHUvGw=";
+    })
+    # Fix tests with Git 2.44.0+
+    (fetchpatch {
+      url = "https://github.com/arxanas/git-branchless/pull/1161.patch";
+      hash = "sha256-KHobEIXhlDar8CvIVUi4I695jcJZXgGRhU86b99x86Y=";
+    })
+  ];
+
+  cargoHash = "sha256-Ppw5TN/6zMNxFAx90Q9hQ7RdGxV+TT8UlOm68ldK8oc=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -37,6 +51,10 @@ rustPlatform.buildRustPackage rec {
     libiconv
   ];
 
+  postInstall = ''
+    $out/bin/git-branchless install-man-pages $out/share/man
+  '';
+
   preCheck = ''
     export TEST_GIT=${git}/bin/git
     export TEST_GIT_EXEC_PATH=$(${git}/bin/git --exec-path)
@@ -49,9 +67,10 @@ rustPlatform.buildRustPackage rec {
   ];
 
   meta = with lib; {
-    description = "A suite of tools to help you visualize, navigate, manipulate, and repair your commit history";
+    description = "Suite of tools to help you visualize, navigate, manipulate, and repair your commit history";
     homepage = "https://github.com/arxanas/git-branchless";
     license = licenses.gpl2Only;
-    maintainers = with maintainers; [ msfjarvis nh2 hmenke ];
+    mainProgram = "git-branchless";
+    maintainers = with maintainers; [ nh2 hmenke ];
   };
 }

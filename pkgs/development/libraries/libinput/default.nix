@@ -45,7 +45,7 @@ in
 
 stdenv.mkDerivation rec {
   pname = "libinput";
-  version = "1.22.1";
+  version = "1.25.0";
 
   outputs = [ "bin" "out" "dev" ];
 
@@ -54,7 +54,7 @@ stdenv.mkDerivation rec {
     owner = "libinput";
     repo = "libinput";
     rev = version;
-    sha256 = "RgwEp60Anr+CpJws6srIv/Qzk2r9NoekeNQ0UT3FRZ0=";
+    hash = "sha256-c2FU5OW+CIgtYTQy+bwIbaw3SP1pVxaLokhO+ag5/1s=";
   };
 
   patches = [
@@ -128,9 +128,11 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "Handles input devices in Wayland compositors and provides a generic X.Org input driver";
+    mainProgram = "libinput";
     homepage = "https://www.freedesktop.org/wiki/Software/libinput/";
     license = licenses.mit;
-    platforms = platforms.unix;
+    platforms = platforms.linux;
     maintainers = with maintainers; [ codyopel ] ++ teams.freedesktop.members;
+    changelog = "https://gitlab.freedesktop.org/libinput/libinput/-/releases/${version}";
   };
 }

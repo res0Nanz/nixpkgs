@@ -15,9 +15,10 @@
 , libucontext ? null
 , libxcrypt ? null
 , cloog ? null
+, darwin ? null
 , isl ? null
 , zlib ? null
-, gnatboot ? null
+, gnat-bootstrap ? null
 , flex ? null
 , boehmgc ? null
 , zip ? null
@@ -30,7 +31,7 @@
 , javaAwtGtk ? false
 , langAda ? false
 , langGo ? false
-, crossStageStatic ? null
+, withoutTargetLibc ? null
 , threadsCross ? null
 }:
 
@@ -51,7 +52,7 @@ in
   ++ optionals (perl != null) [ perl ]
   ++ optionals javaAwtGtk [ pkg-config ]
   ++ optionals (with stdenv.targetPlatform; isVc4 || isRedox && flex != null) [ flex ]
-  ++ optionals langAda [ gnatboot ]
+  ++ optionals langAda [ gnat-bootstrap ]
   # The builder relies on GNU sed (for instance, Darwin's `sed' fails with
   # "-i may not be used with stdin"), and `stdenvNative' doesn't provide it.
   ++ optionals buildPlatform.isDarwin [ gnused ]
@@ -85,8 +86,9 @@ in
   ++ optionals langJava [ boehmgc zip unzip ]
   ++ optionals javaAwtGtk ([ gtk2 libart_lgpl ] ++ xlibs)
   ++ optionals (langGo && stdenv.hostPlatform.isMusl) [ libucontext ]
+  ++ optionals (lib.versionAtLeast version "14" && stdenv.hostPlatform.isDarwin) [ darwin.apple_sdk.frameworks.CoreServices ]
   ;
 
   # threadsCross.package after gcc6 so i assume its okay for 4.8 and 4.9 too
-  depsTargetTarget = optionals (!crossStageStatic && threadsCross != { } && threadsCross.package != null) [ threadsCross.package ];
+  depsTargetTarget = optionals (!withoutTargetLibc && threadsCross != { } && threadsCross.package != null) [ threadsCross.package ];
 }

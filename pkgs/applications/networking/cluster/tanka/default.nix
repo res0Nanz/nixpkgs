@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "tanka";
-  version = "0.24.0";
+  version = "0.27.1";
 
   src = fetchFromGitHub {
     owner = "grafana";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-RZLmbf9ginMbFAaUKL5mK5HIYQslP8Vu8zdh1OJ1P1Y=";
+    sha256 = "sha256-4ChTYwRp9R8U97hH1Bgrxr5a/5IoWRAmFgJbD7oJpO4=";
   };
 
-  vendorHash = "sha256-g9e0NesI7WdaTHZ57XRlo8as3IWAFlFW4nkyf6+kd40=";
+  vendorHash = "sha256-u2l3cX8PKHUCPkHuCOyED2LLWygYCDJEhfTjycEBzHI=";
 
   doCheck = false;
 
@@ -23,7 +23,30 @@ buildGoModule rec {
 
   postInstall = ''
     echo "complete -C $out/bin/tk tk" > tk.bash
-    installShellCompletion tk.bash
+
+    cat >tk.fish <<EOF
+
+    function __complete_tk
+        set -lx COMP_LINE (commandline -cp)
+        test -z (commandline -ct)
+        and set COMP_LINE "\$COMP_LINE "
+        $out/bin/tk
+    end
+    complete -f -c tk -a "(__complete_tk)"
+
+    EOF
+
+    cat >tk.zsh <<EOF
+    #compdef tk
+    autoload -U +X bashcompinit && bashcompinit
+    complete -o nospace -C $out/bin/tk tk
+    EOF
+
+    installShellCompletion \
+      --cmd tk \
+      --bash tk.bash \
+      --fish tk.fish \
+      --zsh tk.zsh
   '';
 
   meta = with lib; {
@@ -32,6 +55,5 @@ buildGoModule rec {
     license = licenses.asl20;
     maintainers = with maintainers; [ mikefaille ];
     mainProgram = "tk";
-    platforms = platforms.unix;
   };
 }

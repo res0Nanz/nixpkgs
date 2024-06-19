@@ -11,7 +11,7 @@
 , steam-run
 , unzip
 , webkitgtk
-, wrapGAppsHook
+, wrapGAppsHook3
 }:
 
 python3Packages.buildPythonApplication rec {
@@ -31,18 +31,14 @@ python3Packages.buildPythonApplication rec {
     runHook postCheck
   '';
 
-  # Cannot find GSettings schemas when opening settings,
-  # probably https://github.com/NixOS/nixpkgs/issues/56943
-  strictDeps = false;
-
   nativeBuildInputs = [
     gettext
-    wrapGAppsHook
+    wrapGAppsHook3
+    gobject-introspection
   ];
 
   buildInputs = [
     glib-networking
-    gobject-introspection
     gtk3
   ];
 
@@ -64,6 +60,7 @@ python3Packages.buildPythonApplication rec {
   ];
 
   # Run Linux games using the Steam Runtime by using steam-run in the wrapper
+  # FIXME: not working with makeBinaryWrapper
   postFixup = ''
     sed -e 's#exec -a "$0"#exec -a "$0" ${steam-run}/bin/steam-run#' -i $out/bin/minigalaxy
   '';
@@ -72,9 +69,9 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://sharkwouter.github.io/minigalaxy/";
     changelog = "https://github.com/sharkwouter/minigalaxy/blob/${version}/CHANGELOG.md";
     downloadPage = "https://github.com/sharkwouter/minigalaxy/releases";
-    description = "A simple GOG client for Linux";
+    description = "Simple GOG client for Linux";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ srapenne ];
+    maintainers = with maintainers; [ ];
     platforms = platforms.linux;
   };
 }

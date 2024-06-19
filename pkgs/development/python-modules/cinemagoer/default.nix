@@ -1,17 +1,19 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, lxml
-, sqlalchemy
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  lxml,
+  sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "cinemagoer";
-  version = "2022.12.27";
+  version = "2023.5.1";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-uUq/6Uijv6krBNCa5ftBWG/uYLs/5pLyDONLvBoxjYo=";
+    hash = "sha256-XOHXeuZUZwFhjxHlsVVqGdGO3srRttfZaXPsNJQbGPI=";
   };
 
   propagatedBuildInputs = [
@@ -25,7 +27,7 @@ buildPythonPackage rec {
   pythonImportsCheck = [ "imdb" ]; # Former "imdbpy", upstream is yet to rename here
 
   meta = with lib; {
-    description = "A Python package for retrieving and managing the data of the IMDb movie database about movies and people";
+    description = "Python package for retrieving and managing the data of the IMDb movie database about movies and people";
     downloadPage = "https://github.com/cinemagoer/cinemagoer/";
     homepage = "https://cinemagoer.github.io/";
     license = licenses.gpl2Only;

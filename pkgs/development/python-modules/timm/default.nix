@@ -1,50 +1,73 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, pytestCheckHook
-, expecttest
-, pytest-timeout
-, huggingface-hub
-, pyyaml
-, torch
-, torchvision
+{
+  lib,
+  buildPythonPackage,
+  pythonOlder,
+  fetchFromGitHub,
+  pdm-backend,
+  huggingface-hub,
+  numpy,
+  pyyaml,
+  safetensors,
+  torch,
+  torchvision,
+  expecttest,
+  pytestCheckHook,
+  pytest-timeout,
 }:
 
 buildPythonPackage rec {
   pname = "timm";
-  version = "0.6.12";
-  disabled = pythonOlder "3.6";
+  version = "1.0.7";
+  pyproject = true;
+
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
-    owner = "rwightman";
+    owner = "huggingface";
     repo = "pytorch-image-models";
     rev = "refs/tags/v${version}";
-    hash = "sha256-RNjCcCnNhtr5a+29Bx+k427a03MSooqvnuiDQ8cT8FA=";
+    hash = "sha256-0o88gOZvHXblGPwyRIz2D3sD7wdg0J0knrAFlognEOY=";
   };
 
-  propagatedBuildInputs = [
+  build-system = [ pdm-backend ];
+
+  dependencies = [
     huggingface-hub
+    numpy
     pyyaml
+    safetensors
     torch
     torchvision
   ];
 
-  nativeCheckInputs = [ expecttest pytestCheckHook pytest-timeout ];
+  nativeCheckInputs = [
+    expecttest
+    pytestCheckHook
+    pytest-timeout
+  ];
+
   pytestFlagsArray = [ "tests" ];
-  # takes too long and also tries to download models:
-  disabledTestPaths = [ "tests/test_models.py" ];
+
+  disabledTestPaths = [
+    # Takes too long and also tries to download models
+    "tests/test_models.py"
+  ];
+
+  disabledTests = [
+    # AttributeError: 'Lookahead' object has no attribute '_optimizer_step_pre...
+    "test_lookahead"
+  ];
 
   pythonImportsCheck = [
     "timm"
     "timm.data"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "PyTorch image models, scripts, and pretrained weights";
     homepage = "https://huggingface.co/docs/timm/index";
-    changelog = "https://github.com/rwightman/pytorch-image-models/blob/v${version}/README.md#whats-new";
-    license = licenses.asl20;
-    maintainers = with maintainers; [ bcdarwin ];
+    changelog = "https://github.com/huggingface/pytorch-image-models/blob/v${version}/README.md#whats-new";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ bcdarwin ];
   };
 }

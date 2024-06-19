@@ -2,21 +2,21 @@
 
 buildGoModule rec {
   pname = "pgo-client";
-  version = "4.7.7";
+  version = "4.7.10";
 
   src = fetchFromGitHub {
     owner = "CrunchyData";
     repo = "postgres-operator";
     rev = "v${version}";
-    sha256 = "sha256-rHWCj25NEKbwV1kmuH6k3oWSXKelknb2GRDgLaZSb3U=";
+    sha256 = "sha256-ZwKfbmKPvhxLpCGH+IlfoQjnw8go4N6mfseY2LWCktA=";
   };
 
-  vendorSha256 = "sha256-5/mLlgNdlX/ABrpofPqowCskxFwJAEKVpbsMOvMvTWc=";
+  vendorHash = "sha256-qpS1TLShJwXgmtuhWIPOlcHMofUgOWZ8vbri36i+hpM=";
 
   subPackages = [ "cmd/pgo" ];
 
   meta = with lib; {
-    description = "A CLI client for Crunchy PostgreSQL Kubernetes Operator";
+    description = "CLI client for Crunchy PostgreSQL Kubernetes Operator";
     homepage = "https://github.com/CrunchyData/postgres-operator";
     changelog = "https://github.com/CrunchyData/postgres-operator/releases/tag/v${version}";
     license = licenses.asl20;

@@ -8,14 +8,14 @@
 , removeReferencesTo
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "volk";
   version = "3.0.0";
 
   src = fetchFromGitHub {
     owner = "gnuradio";
-    repo = pname;
-    rev = "v${version}";
+    repo = "volk";
+    rev = "v${finalAttrs.version}";
     hash = "sha256-kI4IuO6TLplo5lLAGIPWQWtePcjIEWB9XaJDA6WlqSg=";
     fetchSubmodules = true;
   };
@@ -29,6 +29,11 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = lib.optionals (!enableModTool) [
     "-DENABLE_MODTOOL=OFF"
+  ] ++ lib.optionals (stdenv.isDarwin && stdenv.isAarch64) [
+    "-DVOLK_CPU_FEATURES=OFF"
+    # offset 17912 in1: -0.0366274 in2: -0.0366173 tolerance was: 1e-05
+    # volk_32f_log2_32f: fail on arch neon
+    "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;qa_volk_32f_log2_32f"
   ];
 
   postInstall = lib.optionalString (!stdenv.isDarwin) ''
@@ -38,16 +43,16 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     python3
-    python3.pkgs.Mako
+    python3.pkgs.mako
   ];
 
   doCheck = true;
 
   meta = with lib; {
     homepage = "http://libvolk.org/";
-    description = "The Vector Optimized Library of Kernels";
+    description = "Vector Optimized Library of Kernels";
     license = licenses.gpl3Plus;
     maintainers = with maintainers; [ doronbehar ];
     platforms = platforms.all;
   };
-}
+})

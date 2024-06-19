@@ -1,14 +1,14 @@
 { lib, stdenv, fetchFromGitHub, kernel, bc, nukeReferences }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "rtl8812au";
-  version = "${kernel.version}-unstable-2023-01-17";
+  version = "${kernel.version}-unstable-2024-03-20";
 
   src = fetchFromGitHub {
     owner = "morrownr";
     repo = "8812au-20210629";
-    rev = "0a8bb3cec3ef91e6ef8cf549ca926016ba0a8acd";
-    sha256 = "sha256-25NaMQq9H6mqVynNQJXpqISAslxfEVSt3ELzG7s4mV4=";
+    rev = "8be3a1d7acf60f77c5d9c33b690b8d7301bdf127";
+    hash = "sha256-HchnRezJNzimOB72Sv5BwL4oXuxPxloAHVuaL+warj8=";
   };
 
   nativeBuildInputs = [ bc nukeReferences ] ++ kernel.moduleBuildDependencies;
@@ -44,6 +44,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/morrownr/8812au-20210629";
     license = licenses.gpl2Only;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ fortuneteller2k ];
+    maintainers = with maintainers; [ moni ];
   };
 }

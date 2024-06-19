@@ -13,16 +13,16 @@
 
 buildGoModule rec {
   pname = "wallutils";
-  version = "5.12.5";
+  version = "5.12.7";
 
   src = fetchFromGitHub {
     owner = "xyproto";
     repo = "wallutils";
     rev = version;
-    hash = "sha256-qC+AF+NFXSrUZAYaiFPwvfZtsAGhKE4XFDOUcfXUAbM=";
+    hash = "sha256-7UqZr/DEiHDgg3XwvsKk/gc6FNtLh3aj5NWVz/A3J4o=";
   };
 
-  vendorSha256 = null;
+  vendorHash = null;
 
   patches = [
     ./000-add-nixos-dirs-to-default-wallpapers.patch
@@ -48,17 +48,19 @@ buildGoModule rec {
 
   ldflags = [ "-s" "-w" ];
 
-  preCheck =
-    let skippedTests = [
-      "TestClosest" # Requiring Wayland or X
-      "TestEveryMinute" # Blocking
-      "TestNewSimpleEvent" # Blocking
-    ]; in
-    ''
-      export XDG_RUNTIME_DIR=`mktemp -d`
+  preCheck = ''
+    export XDG_RUNTIME_DIR=$(mktemp -d)
+  '';
 
-      buildFlagsArray+=("-run" "[^(${builtins.concatStringsSep "|" skippedTests})]")
-    '';
+  checkFlags =
+    let
+      skippedTests = [
+        "TestClosest" # Requiring Wayland or X
+        "TestEveryMinute" # Blocking
+        "TestNewSimpleEvent" # Blocking
+      ];
+    in
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   meta = {
     description = "Utilities for handling monitors, resolutions, and (timed) wallpapers";

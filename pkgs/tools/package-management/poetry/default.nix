@@ -1,33 +1,42 @@
-{ lib
-, python3
-}:
+{ lib, python3, fetchFromGitHub }:
 
 let
-  python = python3.override {
-    packageOverrides = self: super: {
+  newPackageOverrides =
+    self: super: {
       poetry = self.callPackage ./unwrapped.nix { };
 
-      # version overrides required by poetry and its plugins
-      dulwich = super.dulwich.overridePythonAttrs (old: rec {
-        version = "0.20.50";
-        src = self.fetchPypi {
-          inherit (old) pname;
-          inherit version;
-          hash = "sha256-UKlBeWssZ1vjm+co1UDBa1t853654bP4VWUOzmgy0r4=";
+      # The versions of Poetry and poetry-core need to match exactly,
+      # and poetry-core in nixpkgs requires a staging cycle to be updated,
+      # so apply an override here.
+      #
+      # We keep the override around even when the versions match, as
+      # it's likely to become relevant again after the next Poetry update.
+      poetry-core = super.poetry-core.overridePythonAttrs (old: rec {
+        version = "1.9.0";
+        src = fetchFromGitHub {
+          owner = "python-poetry";
+          repo = "poetry-core";
+          rev = "refs/tags/${version}";
+          hash = "sha256-vvwKbzGlvv2LTbXfJxQVM3nUXFGntgJxsku6cbRxCzw=";
         };
       });
-    };
-  };
+    } // (plugins self);
+  python = python3.override (old: {
+    packageOverrides = lib.composeManyExtensions
+      ((if old ? packageOverrides then [ old.packageOverrides ] else [ ]) ++ [ newPackageOverrides ]);
+  });
 
-  plugins = with python.pkgs; {
+  plugins = ps: with ps; {
     poetry-audit-plugin = callPackage ./plugins/poetry-audit-plugin.nix { };
+    poetry-plugin-export = callPackage ./plugins/poetry-plugin-export.nix { };
     poetry-plugin-up = callPackage ./plugins/poetry-plugin-up.nix { };
+    poetry-plugin-poeblix = callPackage ./plugins/poetry-plugin-poeblix.nix { };
   };
 
   # selector is a function mapping pythonPackages to a list of plugins
   # e.g. poetry.withPlugins (ps: with ps; [ poetry-plugin-up ])
   withPlugins = selector: let
-    selected = selector plugins;
+    selected = selector (plugins python.pkgs);
   in python.pkgs.toPythonApplication (python.pkgs.poetry.overridePythonAttrs (old: {
     propagatedBuildInputs = old.propagatedBuildInputs ++ selected;
 
@@ -40,8 +49,9 @@ let
       rm $out/nix-support/propagated-build-inputs
     '';
 
-    passthru = rec {
-      inherit plugins withPlugins;
+    passthru = {
+      plugins = plugins python.pkgs;
+      inherit withPlugins python;
     };
   }));
 in withPlugins (ps: [ ])

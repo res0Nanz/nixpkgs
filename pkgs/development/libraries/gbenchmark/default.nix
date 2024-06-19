@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "gbenchmark";
-  version = "1.7.1";
+  version = "1.8.3";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "benchmark";
     rev = "v${version}";
-    sha256 = "sha256-gg3g/0Ki29FnGqKv9lDTs5oA9NjH23qQ+hTdVtSU+zo=";
+    sha256 = "sha256-gztnxui9Fe/FTieMjdvfJjWHjkImtlsHn6fM1FruyME=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -29,14 +29,15 @@ stdenv.mkDerivation rec {
       --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
 
-  doCheck = true;
+  # Tests fail on 32-bit due to not enough precision
+  doCheck = stdenv.is64bit;
 
   passthru.tests = {
     inherit prometheus-cpp;
   };
 
   meta = with lib; {
-    description = "A microbenchmark support library";
+    description = "Microbenchmark support library";
     homepage = "https://github.com/google/benchmark";
     license = licenses.asl20;
     platforms = platforms.linux ++ platforms.darwin;

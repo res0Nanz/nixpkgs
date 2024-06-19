@@ -1,17 +1,20 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, jsonschema
-, pythonOlder
-, rfc3987
-, ruamel-yaml
-, setuptools-scm
+{
+  stdenv,
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  jsonschema,
+  pythonOlder,
+  rfc3987,
+  ruamel-yaml,
+  setuptools-scm,
+  libfdt,
 }:
 
 buildPythonPackage rec {
   pname = "dtschema";
-  version = "2022.01";
-  format = "setuptools";
+  version = "2024.02";
+  format = "pyproject";
 
   disabled = pythonOlder "3.7";
 
@@ -19,34 +22,45 @@ buildPythonPackage rec {
     owner = "devicetree-org";
     repo = "dt-schema";
     rev = "refs/tags/v${version}";
-    hash = "sha256-wwlXIM/eO3dII/qQpkAGLT3/15rBLi7ZiNtqYFf7Li4=";
+    sha256 = "sha256-UJU8b9BzuuUSHRjnA6hOd1bMPNOlk4LNtrQV5aZmGhI=";
   };
 
-  SETUPTOOLS_SCM_PRETEND_VERSION = version;
-
-  nativeBuildInputs = [
-    setuptools-scm
+  patches = [
+    # Change name of pylibfdt to libfdt
+    ./fix_libfdt_name.patch
   ];
+
+  nativeBuildInputs = [ setuptools-scm ];
 
   propagatedBuildInputs = [
     jsonschema
     rfc3987
     ruamel-yaml
+    libfdt
   ];
 
   # Module has no tests
   doCheck = false;
 
-  pythonImportsCheck = [
-    "dtschema"
-  ];
+  pythonImportsCheck = [ "dtschema" ];
 
   meta = with lib; {
     description = "Tooling for devicetree validation using YAML and jsonschema";
     homepage = "https://github.com/devicetree-org/dt-schema/";
     changelog = "https://github.com/devicetree-org/dt-schema/releases/tag/v${version}";
-    license = with licenses; [ bsd2 /* or */ gpl2Only ];
+    license = with licenses; [
+      bsd2 # or
+      gpl2Only
+    ];
     maintainers = with maintainers; [ sorki ];
+
+    broken = (
+      # Library not loaded: @rpath/libfdt.1.dylib
+      stdenv.isDarwin
+      ||
+
+        # see https://github.com/devicetree-org/dt-schema/issues/108
+        versionAtLeast jsonschema.version "4.18"
+    );
   };
 }
-

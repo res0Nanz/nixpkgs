@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "algolia-cli";
-  version = "1.3.1";
+  version = "1.6.11";
 
   src = fetchFromGitHub {
     owner = "algolia";
     repo = "cli";
     rev = "v${version}";
-    hash = "sha256-lO+ysaXZcwRsuEdkMyPKqrChbW27eId466Eb8Mss2IQ=";
+    hash = "sha256-VqY0h0Z3ocmgw0uFI4f6B5C/bTt3zoUXBlYPgOPxBo0=";
   };
 
-  vendorHash = "sha256-t8SqCBuE/JmVR71MC9sHtQ6tEovO2UJo7FCDM+IBk+c=";
+  vendorHash = "sha256-cNuBTH7L2K4TgD0H9FZ9CjhE5AGXADaniGLD9Lhrtrk=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -28,8 +28,9 @@ buildGoModule rec {
 
   meta = with lib; {
     description = "Algolia’s official CLI devtool";
+    mainProgram = "algolia";
     homepage = "https://algolia.com/doc/tools/cli/";
     license = licenses.mit;
-    maintainers = [ maintainers.marsam ];
+    maintainers = [ ];
   };
 }

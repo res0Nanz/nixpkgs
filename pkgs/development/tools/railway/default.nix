@@ -1,28 +1,32 @@
-{ buildGoModule, fetchFromGitHub, lib }:
+{ lib, rustPlatform, fetchFromGitHub, pkg-config, openssl, stdenv, CoreServices
+, Security }:
 
-buildGoModule rec {
+rustPlatform.buildRustPackage rec {
   pname = "railway";
-  version = "2.1.0";
+  version = "3.9.0";
 
   src = fetchFromGitHub {
     owner = "railwayapp";
     repo = "cli";
     rev = "v${version}";
-    sha256 = "sha256-JpIy8u6L7yOZgTFxFft+vhcat3uPT9EvOXAQOmrpvpc=";
+    hash = "sha256-eMbeU9DflGXQRqoXnTlMmCJUsCvAywjmckDqxhT+LD8=";
   };
 
-  ldflags = [ "-s" "-w" ];
+  cargoHash = "sha256-rYHvvGyD49+n7DHHd0CKCwd6w5WgWONWGxW2vXm7DL4=";
 
-  vendorHash = "sha256-nLuomuAScodgLUKzMTiygtFBnNHrqAojOySZgKLVGJY=";
+  nativeBuildInputs = [ pkg-config ];
 
-  postInstall = ''
-    mv $out/bin/cli $out/bin/railway
-  '';
+  buildInputs = [ openssl ]
+    ++ lib.optionals stdenv.isDarwin [ CoreServices Security ];
+
+  OPENSSL_NO_VENDOR = 1;
 
   meta = with lib; {
-    description = "Railway CLI";
-    homepage = "https://railway.app";
+    mainProgram = "railway";
+    description = "Railway.app CLI";
+    homepage = "https://github.com/railwayapp/cli";
+    changelog = "https://github.com/railwayapp/cli/releases/tag/v${version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ Crafter ];
+    maintainers = with maintainers; [ Crafter techknowlogick ];
   };
 }

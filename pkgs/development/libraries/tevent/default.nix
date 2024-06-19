@@ -10,16 +10,17 @@
 , docbook_xml_dtd_42
 , which
 , wafHook
+, buildPackages
 , libxcrypt
 }:
 
 stdenv.mkDerivation rec {
   pname = "tevent";
-  version = "0.13.0";
+  version = "0.16.1";
 
   src = fetchurl {
     url = "mirror://samba/tevent/${pname}-${version}.tar.gz";
-    sha256 = "sha256-uUN6kX+lU0Q2G+tk7J4AQumcroh5iCpi3Tj2q+I3HQw=";
+    sha256 = "sha256-Nilx4PMtwZBfb+RzYxnEuDSMItyFqmw/aQoo7+VIAp4=";
   };
 
   nativeBuildInputs = [
@@ -52,6 +53,9 @@ stdenv.mkDerivation rec {
   wafConfigureFlags = [
     "--bundled-libraries=NONE"
     "--builtin-libraries=replace"
+  ] ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    "--cross-compile"
+    "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
   ];
 
   # python-config from build Python gives incorrect values when cross-compiling.
@@ -60,7 +64,7 @@ stdenv.mkDerivation rec {
   PYTHON_CONFIG = "/invalid";
 
   meta = with lib; {
-    description = "An event system based on the talloc memory management library";
+    description = "Event system based on the talloc memory management library";
     homepage = "https://tevent.samba.org/";
     license = licenses.lgpl3Plus;
     platforms = platforms.all;

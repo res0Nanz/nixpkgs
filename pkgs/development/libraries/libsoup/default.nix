@@ -14,7 +14,8 @@
 , brotli
 , gnomeSupport ? true
 , sqlite
-, glib-networking
+, buildPackages
+, withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages
 }:
 
 stdenv.mkDerivation rec {
@@ -37,6 +38,7 @@ stdenv.mkDerivation rec {
     ninja
     pkg-config
     glib
+  ] ++ lib.optionals withIntrospection [
     gobject-introspection
     vala
   ];
@@ -58,6 +60,8 @@ stdenv.mkDerivation rec {
   mesonFlags = [
     "-Dtls_check=false" # glib-networking is a runtime dependency, not a compile-time dependency
     "-Dgssapi=disabled"
+    "-Dvapi=${if withIntrospection then "enabled" else "disabled"}"
+    "-Dintrospection=${if withIntrospection then "enabled" else "disabled"}"
     "-Dgnome=${lib.boolToString gnomeSupport}"
     "-Dntlm=disabled"
   ] ++ lib.optionals (!stdenv.isLinux) [
@@ -67,6 +71,7 @@ stdenv.mkDerivation rec {
   env.NIX_CFLAGS_COMPILE = "-lpthread";
 
   doCheck = false; # ERROR:../tests/socket-test.c:37:do_unconnected_socket_test: assertion failed (res == SOUP_STATUS_OK): (2 == 200)
+  separateDebugInfo = true;
 
   postPatch = ''
     # fixes finding vapigen when cross-compiling
@@ -79,9 +84,6 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    propagatedUserEnvPackages = [
-      glib-networking.out
-    ];
     updateScript = gnome.updateScript {
       packageName = pname;
       versionPolicy = "odd-unstable";
@@ -91,8 +93,12 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "HTTP client/server library for GNOME";
-    homepage = "https://wiki.gnome.org/Projects/libsoup";
+    homepage = "https://gitlab.gnome.org/GNOME/libsoup";
     license = lib.licenses.lgpl2Plus;
     inherit (glib.meta) maintainers platforms;
+    pkgConfigModules = [
+      "libsoup-2.4"
+      "libsoup-gnome-2.4"
+    ];
   };
 }

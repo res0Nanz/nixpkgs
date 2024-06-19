@@ -18,11 +18,11 @@
 
 stdenv.mkDerivation rec {
   pname = "btrbk";
-  version = "0.32.5";
+  version = "0.32.6";
 
   src = fetchurl {
     url = "https://digint.ch/download/btrbk/releases/${pname}-${version}.tar.xz";
-    sha256 = "8f5AkWgCFteMeQPYKn+P+V6Ypb6x0f/bK6UpOovDn7Q=";
+    sha256 = "AuKsZHyRhGMgLL5ge7lVV6T3/SNwaRJDM8VNpbK7t2s=";
   };
 
   nativeBuildInputs = [ asciidoctor makeWrapper ];
@@ -64,7 +64,7 @@ stdenv.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "A backup tool for btrfs subvolumes";
+    description = "Backup tool for btrfs subvolumes";
     homepage = "https://digint.ch/btrbk";
     license = licenses.gpl3Only;
     platforms = platforms.unix;

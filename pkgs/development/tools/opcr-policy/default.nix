@@ -5,21 +5,21 @@
 
 buildGoModule rec {
   pname = "opcr-policy";
-  version = "0.1.51";
+  version = "0.2.15";
 
   src = fetchFromGitHub {
     owner = "opcr-io";
     repo = "policy";
     rev = "v${version}";
-    sha256 = "sha256-RpjuKtxiZA6l0ZW0TsEUn2AMLjU/V2RRfQLmfa0imW4=";
+    sha256 = "sha256-ffUggy1Ubs3pnBbznPR3JN0QrSBfkUI9bk+dSq4oxfs=";
   };
-  vendorHash = "sha256-QoD6J+is+InumLiFdbL/y1tuWwBCdBebx6RrIZ4Irik=";
+  vendorHash = "sha256-vqH3f1kfcOG04PPzC4izzKBJPZ3SSlK7y7nKhOJ9GdE=";
 
   ldflags = [ "-s" "-w" "-X github.com/opcr-io/policy/pkg/version.ver=${version}" ];
 
   subPackages = [ "cmd/policy" ];
   # disable go workspaces
-  GOWORK = "off";
+  env.GOWORK = "off";
 
   doCheck = false;
 

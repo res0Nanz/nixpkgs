@@ -1,23 +1,23 @@
 { lib, stdenv, fetchFromGitHub, m4, pkg-config, tcl
-, bzip2, libarchive, libbsd, lzma, openssl, zlib
+, bzip2, elfutils, libarchive, libbsd, xz, openssl, zlib
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pkg";
-  version = "1.19.0";
+  version = "1.21.3";
 
   src = fetchFromGitHub {
     owner = "freebsd";
     repo = "pkg";
     rev = finalAttrs.version;
-    sha256 = "W66g8kVvaPJSyOZcgyDcUBrWQQ5YDkRqofSWfIsjd+k=";
+    hash = "sha256-9LWoacjisyaiR0spF5/k5SneIo09UaCHBE1mrewftd8=";
   };
 
   setOutputFlags = false;
   separateDebugInfo = true;
 
   nativeBuildInputs = [ m4 pkg-config tcl ];
-  buildInputs = [ bzip2 libarchive lzma openssl zlib ]
+  buildInputs = [ bzip2 elfutils libarchive openssl xz zlib ]
     ++ lib.optional stdenv.isLinux libbsd;
 
   enableParallelBuilding = true;
@@ -32,5 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with maintainers; [ qyliss ];
     platforms = with platforms; darwin ++ freebsd ++ linux ++ netbsd ++ openbsd;
     license = licenses.bsd2;
+    mainProgram = "pkg";
   };
 })

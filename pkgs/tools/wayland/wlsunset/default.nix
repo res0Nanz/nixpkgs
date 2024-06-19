@@ -5,13 +5,13 @@
 
 stdenv.mkDerivation rec {
   pname = "wlsunset";
-  version = "0.2.0";
+  version = "0.4.0";
 
   src = fetchFromSourcehut {
     owner = "~kennylevinsen";
     repo = pname;
     rev = version;
-    sha256 = "0hhsddh3rs066rbsjksr8kcwg8lvglbvs67dq0r5wx5c1xcwb51w";
+    sha256 = "sha256-U/yROKkU9pOBLIIIsmkltF64tt5ZR97EAxxGgrFYwNg=";
   };
 
   strictDeps = true;
@@ -32,5 +32,6 @@ stdenv.mkDerivation rec {
     license = licenses.mit;
     platforms = platforms.linux;
     maintainers = with maintainers; [ primeos ];
+    mainProgram = "wlsunset";
   };
 }

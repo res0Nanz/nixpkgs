@@ -9,6 +9,10 @@ stdenv.mkDerivation rec {
     sha256 = "1h06gyxj51ba6kbbnf6hyivwjia0i6gsmjz8kyggaany8a58pkcg";
   };
 
+  patches = [
+    ./ppp-2.5.0-compat.patch
+  ];
+
   buildInputs = [ ppp ];
 
   postPatch = ''
@@ -17,9 +21,9 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage    = "https://poptop.sourceforge.net/dox/";
-    description = "The PPTP Server for Linux";
+    description = "PPTP Server for Linux";
     platforms   = platforms.linux;
     maintainers = with maintainers; [ obadz ];
-    license = licenses.gpl2;
+    license = licenses.gpl2Only;
   };
 }

@@ -1,6 +1,7 @@
 { lib
 , stdenv
 , fetchurl
+, updateAutotoolsGnuConfigScriptsHook
 , guileSupport ? false, guile
 # avoid guile depend on bootstrap to prevent dependency cycles
 , inBootstrap ? false
@@ -14,11 +15,11 @@ in
 
 stdenv.mkDerivation rec {
   pname = "gnumake";
-  version = "4.4";
+  version = "4.4.1";
 
   src = fetchurl {
     url = "mirror://gnu/make/make-${version}.tar.gz";
-    sha256 = "sha256-WB9NToctp0s5Qch0IViYp9NYAvA3Mr3M7h1KeXkQXRg=";
+    sha256 = "sha256-3Rb7HWe/q3mnL16DkHNcSePo5wtJRaFasfgd23hlj7M=";
   };
 
   # to update apply these patches with `git am *.patch` to https://git.savannah.gnu.org/git/make.git
@@ -31,7 +32,7 @@ stdenv.mkDerivation rec {
     ./0002-remove-impure-dirs.patch
   ];
 
-  nativeBuildInputs = lib.optionals guileEnabled [ pkg-config ];
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ] ++ lib.optionals guileEnabled [ pkg-config ];
   buildInputs = lib.optionals guileEnabled [ guile ];
 
   configureFlags = lib.optional guileEnabled "--with-guile"
@@ -54,7 +55,7 @@ stdenv.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "A tool to control the generation of non-source files from sources";
+    description = "Tool to control the generation of non-source files from sources";
     longDescription = ''
       Make is a tool which controls the generation of executables and
       other non-source files of a program from the program's source files.

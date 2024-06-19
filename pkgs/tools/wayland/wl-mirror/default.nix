@@ -28,16 +28,17 @@ in
 
 stdenv.mkDerivation rec {
   pname = "wl-mirror";
-  version = "0.13.0";
+  version = "0.16.3";
 
   src = fetchFromGitHub {
     owner = "Ferdi265";
     repo = "wl-mirror";
     rev = "v${version}";
-    hash = "sha256-jjOcEr/E7l3ykdLAfiDlRSI0u76byDmBwfispTbopk8=";
+    hash = "sha256-/ZxTFr5Mmg1UoJikweGJThREgutKCF0C5IwxEZ3bv7Q=";
   };
 
   strictDeps = true;
+  depsBuildBuild = [ pkg-config ];
   nativeBuildInputs = [ cmake pkg-config wayland-scanner scdoc makeWrapper ];
   buildInputs = [ libGL wayland wayland-protocols wlr-protocols bash ];
 
@@ -59,9 +60,9 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/Ferdi265/wl-mirror";
-    description = "Mirrors an output onto a Wayland surface.";
+    description = "Simple Wayland output mirror client";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ synthetica twitchyliquid64 ];
+    maintainers = with maintainers; [ synthetica ];
     platforms = platforms.linux;
   };
 }

@@ -4,7 +4,6 @@
 , rustPlatform
 , installShellFiles
 , cmake
-, fetchpatch
 , git
 , nixosTests
 , Security
@@ -14,13 +13,13 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "starship";
-  version = "1.13.1";
+  version = "1.19.0";
 
   src = fetchFromGitHub {
     owner = "starship";
-    repo = pname;
+    repo = "starship";
     rev = "v${version}";
-    hash = "sha256-MgCYlcJoNJ3eChH7WLKgvgblmz9Wy6JplULjeGGiEXY=";
+    hash = "sha256-3IO9hHuhzJsCHU/6BA5ylEKQI2ik6ZiRul/iO/vzii4=";
   };
 
   nativeBuildInputs = [ installShellFiles cmake ];
@@ -29,14 +28,23 @@ rustPlatform.buildRustPackage rec {
 
   NIX_LDFLAGS = lib.optionals (stdenv.isDarwin && stdenv.isx86_64) [ "-framework" "AppKit" ];
 
+  # tries to access HOME only in aarch64-darwin environment when building mac-notification-sys
+  preBuild = lib.optionalString (stdenv.isDarwin && stdenv.isAarch64) ''
+    export HOME=$TMPDIR
+  '';
+
   postInstall = ''
     installShellCompletion --cmd starship \
       --bash <($out/bin/starship completions bash) \
       --fish <($out/bin/starship completions fish) \
       --zsh <($out/bin/starship completions zsh)
+
+    presetdir=$out/share/starship/presets/
+    mkdir -p $presetdir
+    cp docs/public/presets/toml/*.toml $presetdir
   '';
 
-  cargoHash = "sha256-sdETcvmz9mWTXEt9h7vP+FKolhnamkwtbkYiJE/HVX0=";
+  cargoHash = "sha256-zX04gX40dFYsK+R6gafHNtDevzrWiGufMwrGfhqYVG0=";
 
   nativeCheckInputs = [ git ];
 
@@ -49,9 +57,10 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = with lib; {
-    description = "A minimal, blazing fast, and extremely customizable prompt for any shell";
+    description = "Minimal, blazing fast, and extremely customizable prompt for any shell";
     homepage = "https://starship.rs";
     license = licenses.isc;
-    maintainers = with maintainers; [ bbigras danth davidtwco Br1ght0ne Frostman marsam ];
+    maintainers = with maintainers; [ danth davidtwco Br1ght0ne Frostman ];
+    mainProgram = "starship";
   };
 }

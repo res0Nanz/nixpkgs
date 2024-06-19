@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchFromGitLab
+, cargo
 , dbus
 , desktop-file-utils
 , gdk-pixbuf
@@ -15,6 +16,7 @@
 , openssl
 , pkg-config
 , rustPlatform
+, rustc
 , sqlite
 , wrapGAppsHook4
 , cmake
@@ -47,9 +49,9 @@ stdenv.mkDerivation rec {
     meson
     ninja
     pkg-config
-    rustPlatform.rust.cargo
+    cargo
     rustPlatform.cargoSetupHook
-    rustPlatform.rust.rustc
+    rustc
     wrapGAppsHook4
     cmake
   ];
@@ -73,6 +75,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://gitlab.gnome.org/World/Shortwave";
     description = "Find and listen to internet radio stations";
+    mainProgram = "shortwave";
     longDescription = ''
       Shortwave is a streaming audio player designed for the GNOME
       desktop. It is the successor to the older Gradio application.

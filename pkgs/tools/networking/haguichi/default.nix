@@ -6,7 +6,7 @@
 , pkg-config
 , python3
 , vala
-, wrapGAppsHook
+, wrapGAppsHook3
 , desktop-file-utils
 , glib
 , gtk3
@@ -14,13 +14,13 @@
 
 stdenv.mkDerivation rec {
   pname = "haguichi";
-  version = "1.4.5";
+  version = "1.4.6";
 
   src = fetchFromGitHub {
     owner = "ztefn";
     repo = "haguichi";
     rev = version;
-    hash = "sha256-bPeo+qTpTWYkE9PsfgooE2vsO9FIdNIdA+B5ml6i8s0=";
+    hash = "sha256-H/Aw8zJOioOLWxiM/pMb+QSIoEp3zIkLb26S6QN3hv0=";
   };
 
   nativeBuildInputs = [
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
     pkg-config
     python3
     vala
-    wrapGAppsHook
+    wrapGAppsHook3
     desktop-file-utils # for update-desktop-database
     glib # for glib-compile-resources
     gtk3 # for gtk-update-icon-cache
@@ -48,6 +48,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "Graphical frontend for Hamachi on Linux";
+    mainProgram = "haguichi";
     homepage = "https://haguichi.net/";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;

@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "gobgp";
-  version = "3.12.0";
+  version = "3.27.0";
 
   src = fetchFromGitHub {
     owner = "osrg";
     repo = "gobgp";
     rev = "v${version}";
-    sha256 = "sha256-keev3DZ3xN5UARuYKfSdox0KKBjrM5RoMD273Aw0AGY=";
+    sha256 = "sha256-RxBAnElmQkrkMuIC0UpneJXN1OiPhaTPm/tYvc8QSg8=";
   };
 
-  vendorHash = "sha256-5lRW9gWQZRRqZoVB16kI1VEnr0XsiPtLUuioK/0f8w0=";
+  vendorHash = "sha256-wrgRQwisOHAhvRbvGXMW5VWkQuEifCwCo3usuxLie4A=";
 
   postConfigure = ''
     export CGO_ENABLED=0
@@ -24,9 +24,10 @@ buildGoModule rec {
   subPackages = [ "cmd/gobgp" ];
 
   meta = with lib; {
-    description = "A CLI tool for GoBGP";
+    description = "CLI tool for GoBGP";
     homepage = "https://osrg.github.io/gobgp/";
     license = licenses.asl20;
     maintainers = with maintainers; [ higebu ];
+    mainProgram = "gobgp";
   };
 }

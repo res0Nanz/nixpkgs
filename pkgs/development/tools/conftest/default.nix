@@ -6,15 +6,15 @@
 
 buildGoModule rec {
   pname = "conftest";
-  version = "0.39.2";
+  version = "0.53.0";
 
   src = fetchFromGitHub {
     owner = "open-policy-agent";
     repo = "conftest";
     rev = "refs/tags/v${version}";
-    hash = "sha256-QthFKdO68kFePAMQX239f4HJNG5ZkOyxEq6zmHuDNE4=";
+    hash = "sha256-Fg9U6xCOivolwpH4C63HAhSEcfkTJYrNRzwr0OLtLqs=";
   };
-  vendorHash = "sha256-6JYn8o696uDKayw5zLoys5UNIFS2FK2LOZw62rgP72Y=";
+  vendorHash = "sha256-tFJf0wYai1Nc8zbTXE/FSM0K7IkGQjsrMCwpi3rcwzg=";
 
   ldflags = [
     "-s"
@@ -45,6 +45,7 @@ buildGoModule rec {
 
   meta = with lib; {
     description = "Write tests against structured configuration data";
+    mainProgram = "conftest";
     downloadPage = "https://github.com/open-policy-agent/conftest";
     homepage = "https://www.conftest.dev";
     changelog = "https://github.com/open-policy-agent/conftest/releases/tag/v${version}";

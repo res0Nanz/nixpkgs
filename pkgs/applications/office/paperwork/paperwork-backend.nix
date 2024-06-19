@@ -7,7 +7,6 @@
 , pycountry
 , whoosh
 , termcolor
-, levenshtein
 , pygobject3
 , pyocr
 , natsort
@@ -23,13 +22,15 @@
 , shared-mime-info
 , libreoffice
 , unittestCheckHook
+, setuptools-scm
 }:
 
 buildPythonPackage rec {
   pname = "paperwork-backend";
   inherit (import ./src.nix { inherit fetchFromGitLab; }) version src;
+  format = "pyproject";
 
-  sourceRoot = "source/paperwork-backend";
+  sourceRoot = "${src.name}/paperwork-backend";
 
   patches = [
     # disables a flaky test https://gitlab.gnome.org/World/OpenPaperwork/paperwork/-/issues/1035#note_1493700
@@ -39,10 +40,6 @@ buildPythonPackage rec {
   patchFlags = [ "-p2" ];
 
   postPatch = ''
-    substituteInPlace setup.py \
-      --replace python-Levenshtein Levenshtein
-
-    echo 'version = "${version}"' > src/paperwork_backend/_version.py
     chmod a+w -R ..
     patchShebangs ../tools
   '';
@@ -58,7 +55,6 @@ buildPythonPackage rec {
     pygobject3
     pyocr
     pypillowfight
-    levenshtein
     poppler_gi
     scikit-learn
     termcolor
@@ -69,6 +65,7 @@ buildPythonPackage rec {
     gettext
     shared-mime-info
     which
+    setuptools-scm
   ];
 
   preBuild = ''

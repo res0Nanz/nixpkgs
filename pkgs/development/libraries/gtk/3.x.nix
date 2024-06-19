@@ -8,6 +8,7 @@
 , docbook_xml_dtd_43
 , gtk-doc
 , meson
+, mesonEmulatorHook
 , ninja
 , python3
 , makeWrapper
@@ -21,6 +22,9 @@
 , atk
 , at-spi2-atk
 , gobject-introspection
+, buildPackages
+, withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages
+, compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages
 , fribidi
 , xorg
 , libepoxy
@@ -39,7 +43,6 @@
 , wayland-protocols
 , xineramaSupport ? stdenv.isLinux
 , cupsSupport ? stdenv.isLinux
-, withGtkDoc ? stdenv.isLinux && (stdenv.buildPlatform == stdenv.hostPlatform)
 , cups
 , AppKit
 , Cocoa
@@ -61,9 +64,9 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtk+3";
-  version = "3.24.36";
+  version = "3.24.42";
 
-  outputs = [ "out" "dev" ] ++ lib.optional withGtkDoc "devdoc";
+  outputs = [ "out" "dev" ] ++ lib.optional withIntrospection "devdoc";
   outputBin = "dev";
 
   setupHooks = [
@@ -75,7 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs) version;
   in fetchurl {
     url = "mirror://gnome/sources/gtk+/${lib.versions.majorMinor version}/gtk+-${version}.tar.xz";
-    sha256 = "sha256-J6bvFXdDNQyAf/6lm6odcCJtvt6CpelT/9WOpgWf5pE=";
+    sha256 = "sha256-UPifYVCS1N0Bu9dZcZ+L04Dl8Un2/XipRyXi3hEjd+I=";
   };
 
   patches = [
@@ -94,7 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
   nativeBuildInputs = [
     gettext
-    gobject-introspection
     makeWrapper
     meson
     ninja
@@ -102,12 +104,15 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     sassc
     gdk-pixbuf
-  ] ++ finalAttrs.setupHooks ++ lib.optionals withGtkDoc [
+  ] ++ finalAttrs.setupHooks ++ lib.optionals withIntrospection [
+    gobject-introspection
     docbook_xml_dtd_43
     docbook-xsl-nons
     gtk-doc
     # For xmllint
     libxml2
+  ] ++ lib.optionals ((withIntrospection || compileSchemas) && !stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    mesonEmulatorHook
   ] ++ lib.optionals waylandSupport [
     wayland-scanner
   ];
@@ -157,12 +162,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [
-    "-Dgtk_doc=${lib.boolToString withGtkDoc}"
+    "-Dgtk_doc=${lib.boolToString withIntrospection}"
     "-Dtests=false"
     "-Dtracker3=${lib.boolToString trackerSupport}"
     "-Dbroadway_backend=${lib.boolToString broadwaySupport}"
     "-Dx11_backend=${lib.boolToString x11Support}"
     "-Dquartz_backend=${lib.boolToString (stdenv.isDarwin && !x11Support)}"
+    "-Dintrospection=${lib.boolToString withIntrospection}"
   ];
 
   doCheck = false; # needs X11
@@ -177,6 +183,10 @@ stdenv.mkDerivation (finalAttrs: {
     # See https://github.com/NixOS/nixpkgs/issues/132259
     substituteInPlace meson.build \
       --replace "x11_enabled = false" ""
+
+    # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
+    substituteInPlace meson.build \
+      --replace 'if not meson.is_cross_build()' 'if ${lib.boolToString compileSchemas}'
 
     files=(
       build-aux/meson/post-install.py
@@ -232,7 +242,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = with lib; {
-    description = "A multi-platform toolkit for creating graphical user interfaces";
+    description = "Multi-platform toolkit for creating graphical user interfaces";
     longDescription = ''
       GTK is a highly usable, feature rich toolkit for creating
       graphical user interfaces which boasts cross platform
@@ -254,6 +264,6 @@ stdenv.mkDerivation (finalAttrs: {
       "gtk+-x11-3.0"
     ];
     platforms = platforms.all;
-    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${version}/NEWS";
+    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${finalAttrs.version}/NEWS";
   };
 })

@@ -13,18 +13,25 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libcbor";
-  version = "unstable-2023-01-29"; # Musl fix hasn't been released yet.
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "PJK";
     repo = "libcbor";
-    rev = "cb4162f40d94751141b4d43b07c4add83e738a68";
-    sha256 = "sha256-ZTa+wG1g9KsVoqJG/yqxo2fJ7OhPnaI9QcfOmpOT3pg=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-N1xYkZw/6lX/nX/TE6/pVuEFgSyDiUJ50msK42NrKwI=";
   };
 
+  outputs = [ "out" "dev" ];
+
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
-  cmakeFlags = lib.optional finalAttrs.doCheck "-DWITH_TESTS=ON"
+  buildInputs = [
+    cmocka # cmake expects cmocka module
+  ];
+
+  cmakeFlags = lib.optional finalAttrs.finalPackage.doCheck "-DWITH_TESTS=ON"
     ++ lib.optional (!stdenv.hostPlatform.isStatic) "-DBUILD_SHARED_LIBS=ON";
 
   # Tests are restricted while pkgsStatic.cmocka is broken. Tracked at:

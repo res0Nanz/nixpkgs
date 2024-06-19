@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "croc";
-  version = "9.6.3";
+  version = "10.0.8";
 
   src = fetchFromGitHub {
     owner = "schollz";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-nAziLnuLkkPl1/RskKEehvQBMG4sYTEv+uPOQemum9w=";
+    hash = "sha256-kfvAJT//ZjhjNhKNbaRGjiXO8fsaZZCVZ03BUdD6V6c=";
   };
 
-  vendorSha256 = "sha256-yZ7S/6I5xdrfmyPkZsUUavXum8RqEVrlgrkJMQZc6IQ=";
+  vendorHash = "sha256-URaU6gy+DOChdbuvUTIWY3cUQTVogD5gUH3p17xmXzE=";
 
   subPackages = [ "." ];
 
@@ -20,6 +20,7 @@ buildGoModule rec {
       local-relay = callPackage ./test-local-relay.nix { };
     };
   };
+
   meta = with lib; {
     description = "Easily and securely send things from one computer to another";
     longDescription = ''
@@ -37,5 +38,6 @@ buildGoModule rec {
     homepage = "https://github.com/schollz/croc";
     license = licenses.mit;
     maintainers = with maintainers; [ hugoreeves equirosa SuperSandro2000 ];
+    mainProgram = "croc";
   };
 }

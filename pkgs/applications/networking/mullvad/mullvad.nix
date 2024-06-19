@@ -1,9 +1,7 @@
 { lib
 , stdenv
-, writeText
 , rustPlatform
 , fetchFromGitHub
-, fetchpatch
 , pkg-config
 , protobuf
 , makeWrapper
@@ -19,26 +17,23 @@
 }:
 rustPlatform.buildRustPackage rec {
   pname = "mullvad";
-  version = "2023.1";
+  version = "2024.1";
 
   src = fetchFromGitHub {
     owner = "mullvad";
     repo = "mullvadvpn-app";
     rev = version;
-    hash = "sha256-BoduliiDOpzEPYHAjr636e7DbrhFnC/v9au6Mp9T/Qs=";
+    hash = "sha256-syIBYZe+e6i5A6Te51eNKcwwycnRhO1o2tP+z81NYXQ=";
   };
 
-  cargoHash = "sha256-5kK2IA0Z1dQbHlnGXNZHD+BycurshfpqrwcIEveWKT0=";
-
-  patches = [
-    # https://github.com/mullvad/mullvadvpn-app/pull/4389
-    # can be removed after next release
-    (fetchpatch {
-      name = "mullvad-version-dont-check-git.patch";
-      url = "https://github.com/mullvad/mullvadvpn-app/commit/8062cc74fc94bbe073189e78328901606c859d41.patch";
-      hash = "sha256-1BhCId0J1dxhPM3oOmhZB+07N+k1GlvAT1h6ayfx174=";
-    })
-  ];
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+    outputHashes = {
+      "nix-0.26.1" = "sha256-b5bLeZVNbJE7aBnyzl0qvo0mXFeXa4hAZiuT1VJiFLk=";
+      "udp-over-tcp-0.3.0" = "sha256-5PeaM7/zhux1UdlaKpnQ2yIdmFy1n2weV/ux9lSRha4=";
+      "hickory-proto-0.24.0" = "sha256-IqGVoQ1vRruCcaDr82ARkvSo42Pe9Q6iJIWnSd6GqEg=";
+    };
+  };
 
   nativeBuildInputs = [
     pkg-config
@@ -56,7 +51,7 @@ rustPlatform.buildRustPackage rec {
 
   # talpid-core wants libwg.a in build/lib/{triple}
   preBuild = ''
-    dest=build/lib/${stdenv.targetPlatform.config}
+    dest=build/lib/${stdenv.hostPlatform.config}
     mkdir -p $dest
     ln -s ${libwg}/lib/libwg.a $dest
   '';

@@ -2,16 +2,16 @@
 
 buildNpmPackage rec {
   pname = "terminal-stocks";
-  version = "1.0.14";
+  version = "1.0.19";
 
   src = fetchFromGitHub {
     owner = "shweshi";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-AzLMqp5t9u1ne+xCKp0dq/3V3DKJ1Ou9riAN+KqkStg=";
+    hash = "sha256-6eDBcQfo6M+Z31ILLM4BbiOxoTD6t4LQJxawoJFEzhg=";
   };
 
-  npmDepsHash = "sha256-GOg6B8BWkWegxeYmlHSJjFNrb/frb6jdzjjNSGF38Zo=";
+  npmDepsHash = "sha256-0k2+vdfOUF0zV6Tl7VGXS2dNLnCHgSdI12LqvGkbv+k=";
   dontNpmBuild = true;
 
   passthru.updateScript = nix-update-script {};
@@ -21,5 +21,6 @@ buildNpmPackage rec {
     homepage = "https://github.com/shweshi/terminal-stocks";
     maintainers = with maintainers; [ mislavzanic ];
     license = licenses.mit;
+    mainProgram = "terminal-stocks";
   };
 }

@@ -1,4 +1,4 @@
-{ lib, stdenv, callPackage, fetchurl, nixosTests, commandLineArgs ? "" }:
+{ lib, stdenv, callPackage, fetchurl, nixosTests, commandLineArgs ? "", useVSCodeRipgrep ? stdenv.isDarwin }:
 
 let
   inherit (stdenv.hostPlatform) system;
@@ -15,21 +15,21 @@ let
   archive_fmt = if stdenv.isDarwin then "zip" else "tar.gz";
 
   sha256 = {
-    x86_64-linux = "11w2gzhp0vlpygk93cksxhkimc9y8w862gn9450xkzi1jsps5lj4";
-    x86_64-darwin = "0ya17adx2vbi800ws5sfqq03lrjjk6kbclrfrc2zfij2ha05xl8z";
-    aarch64-linux = "15kzjs1ha5x2hcq28nkbb0rim1v694jj6p9sz226rai3bmq9airg";
-    aarch64-darwin = "1cggppblr42jzpcz3g8052w5y1b9392iizpvg6y7001kw66ndp3n";
-    armv7l-linux = "01qqhhl5ffvba1pk4jj3q7sbahq7cvy81wvmgng1cmaj5b8m8dgp";
+    x86_64-linux = "1r76ikfikagg9v278pgiqhnjsv7pqn0xi372y1l0wsashlxl7kb0";
+    x86_64-darwin = "156604xzazmb54p0rdkv5wy9livg0xz2jviycdizablmvsxybs57";
+    aarch64-linux = "0cp120pcjpgf9qvmks9f8l2caxqlvnqvmxa7fh9mf83zpkdmnsnl";
+    aarch64-darwin = "1k06648jx64irshs0v4qy6xlkd9mk514xf21dlfhvic4aj89kcx9";
+    armv7l-linux = "0jy8hkbxh1969kskggg2y86cphly9l9gs7y4plj90jmlvlzjjjxm";
   }.${system} or throwSystem;
 
-  sourceRoot = if stdenv.isDarwin then "" else ".";
+  sourceRoot = lib.optionalString (!stdenv.isDarwin) ".";
 in
   callPackage ./generic.nix rec {
-    inherit sourceRoot commandLineArgs;
+    inherit sourceRoot commandLineArgs useVSCodeRipgrep;
 
     # Please backport all compatible updates to the stable release.
     # This is important for the extension ecosystem.
-    version = "1.76.0.23062";
+    version = "1.90.1.24165";
     pname = "vscodium";
 
     executableName = "codium";
@@ -61,7 +61,7 @@ in
       downloadPage = "https://github.com/VSCodium/vscodium/releases";
       license = licenses.mit;
       sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-      maintainers = with maintainers; [ synthetica turion bobby285271 ];
+      maintainers = with maintainers; [ synthetica bobby285271 ludovicopiero ];
       mainProgram = "codium";
       platforms = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" "armv7l-linux" ];
     };

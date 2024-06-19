@@ -1,43 +1,51 @@
-{ stdenv
-, lib
-, buildPythonPackage
-, cons
-, cython
-, etuples
-, fetchFromGitHub
-, filelock
-, jax
-, jaxlib
-, logical-unification
-, minikanren
-, numba
-, numba-scipy
-, numpy
-, pytestCheckHook
-, pythonOlder
-, scipy
-, typing-extensions
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  cython,
+  versioneer,
+  cons,
+  etuples,
+  filelock,
+  logical-unification,
+  minikanren,
+  numpy,
+  scipy,
+  typing-extensions,
+  jax,
+  jaxlib,
+  numba,
+  pytest-mock,
+  pytestCheckHook,
+  pythonOlder,
+  tensorflow-probability,
 }:
 
 buildPythonPackage rec {
   pname = "pytensor";
-  version = "2.9.1";
-  format = "setuptools";
+  version = "2.22.1";
+  pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.10";
 
   src = fetchFromGitHub {
     owner = "pymc-devs";
-    repo = pname;
+    repo = "pytensor";
     rev = "refs/tags/rel-${version}";
-    hash = "sha256-vuZHiDbGg55lXr9BwPT66Hy8RUe/RfYVaV57i/YlBwg=";
+    hash = "sha256-FG95+3g+DcqQkyJX3PavfyUWTINFLrgAPTaHYN/jk90=";
   };
 
-  nativeBuildInputs = [
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace "versioneer[toml]==0.28" "versioneer[toml]"
+  '';
+
+  build-system = [
     cython
+    versioneer
   ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     cons
     etuples
     filelock
@@ -48,48 +56,46 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  checkInputs = [
+  nativeCheckInputs = [
     jax
     jaxlib
     numba
-    numba-scipy
+    pytest-mock
     pytestCheckHook
+    tensorflow-probability
   ];
-
-  postPatch = ''
-    substituteInPlace setup.cfg \
-      --replace "--durations=50" ""
-  '';
 
   preBuild = ''
     export HOME=$(mktemp -d)
   '';
 
-  pythonImportsCheck = [
-    "pytensor"
-  ];
+  pythonImportsCheck = [ "pytensor" ];
 
   disabledTests = [
     # benchmarks (require pytest-benchmark):
     "test_elemwise_speed"
+    "test_fused_elemwise_benchmark"
     "test_logsumexp_benchmark"
     "test_scan_multiple_output"
+    "test_vector_taps_benchmark"
   ];
 
   disabledTestPaths = [
     # Don't run the most compute-intense tests
     "tests/scan/"
     "tests/tensor/"
-    "tests/sandbox/"
     "tests/sparse/sandbox/"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Python library to define, optimize, and efficiently evaluate mathematical expressions involving multi-dimensional arrays";
+    mainProgram = "pytensor-cache";
     homepage = "https://github.com/pymc-devs/pytensor";
     changelog = "https://github.com/pymc-devs/pytensor/releases";
-    license = licenses.bsd3;
-    maintainers = with maintainers; [ bcdarwin ];
-    broken = (stdenv.isLinux && stdenv.isAarch64);
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [
+      bcdarwin
+      ferrine
+    ];
   };
 }

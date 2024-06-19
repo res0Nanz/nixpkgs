@@ -1,38 +1,33 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
-, poetry-core
-, pytest
-, colored
-, invoke
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  python,
+  poetry-core,
+  pytest,
+  colored,
+  invoke,
 }:
 
 buildPythonPackage rec {
   pname = "syrupy";
-  version = "4.0.1";
+  version = "4.6.1";
   format = "pyproject";
 
-  disabled = pythonOlder "3.8.1";
+  disabled = lib.versionOlder python.version "3.8.1";
 
   src = fetchFromGitHub {
     owner = "tophat";
     repo = "syrupy";
     rev = "refs/tags/v${version}";
-    hash = "sha256-BL1Z1hPMwU1duAZb3ZTWWKS/XGv8RJ6/4YoBhktd5NE=";
+    hash = "sha256-NBJJqQsZqqKHOdqGa/j/2KQvlenLCEJBqlfdjtFK00U=";
   };
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  nativeBuildInputs = [ poetry-core ];
 
-  buildInputs = [
-    pytest
-  ];
+  buildInputs = [ pytest ];
 
-  propagatedBuildInputs = [
-    colored
-  ];
+  propagatedBuildInputs = [ colored ];
 
   nativeCheckInputs = [
     invoke
@@ -45,6 +40,8 @@ buildPythonPackage rec {
     invoke test
     runHook postCheck
   '';
+
+  pythonImportsCheck = [ "syrupy" ];
 
   meta = with lib; {
     changelog = "https://github.com/tophat/syrupy/releases/tag/v${version}";

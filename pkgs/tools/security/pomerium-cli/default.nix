@@ -8,16 +8,16 @@ let
 in
 buildGoModule rec {
   pname = "pomerium-cli";
-  version = "0.21.0";
+  version = "0.23.0";
 
   src = fetchFromGitHub {
     owner = "pomerium";
     repo = "cli";
     rev = "v${version}";
-    sha256 = "sha256-0JMMa85gMTZA0JtxpONVMakbsapAoCXdiL3+Whv5Pp0=";
+    sha256 = "sha256-2upvdL8kk0Kbll8UbviyzIX2jdK+tqcHvVlkpz5JjrA=";
   };
 
-  vendorHash = "sha256-eATNBUQNspDdksF06VHIzwzEJfaFBlJt9OtONxH49s4=";
+  vendorHash = "sha256-aQo58i+XuCkdjIg/IPf7kNLXXA0NwZbQMhgWyMb45B4=";
 
   subPackages = [
     "cmd/pomerium-cli"
@@ -56,6 +56,7 @@ buildGoModule rec {
   meta = with lib; {
     homepage = "https://pomerium.io";
     description = "Client-side helper for Pomerium authenticating reverse proxy";
+    mainProgram = "pomerium-cli";
     license = licenses.asl20;
     maintainers = with maintainers; [ lukegb ];
     platforms = platforms.unix;

@@ -20,8 +20,11 @@ let
     powerpc64le-linux = "ppc64le";
   }.${stdenv.system} or (throw "Unsupported platform ${stdenv.system}");
 
-  update = "362";
+  update = "412";
   build = "ga";
+
+  # when building a headless jdk, also bootstrap it with a headless jdk
+  openjdk-bootstrap = openjdk8-bootstrap.override { gtkSupport = !headless; };
 
   openjdk8 = stdenv.mkDerivation rec {
     pname = "openjdk" + lib.optionalString headless "-headless";
@@ -31,15 +34,15 @@ let
       owner = "openjdk";
       repo = "jdk8u";
       rev = "jdk${version}";
-      sha256 = "sha256-C5dQwfIIpIrLeO3JWERyFCQHUSgG8gARuc3qXAeLkJ4=";
+      sha256 = "sha256-o+H5n5p6JG1giJj9OADgMbQPaoKMzLMFquKH536SHhM=";
     };
     outputs = [ "out" "jre" ];
 
     nativeBuildInputs = [ pkg-config lndir unzip ];
     buildInputs = [
-      cpio file which zip perl openjdk8-bootstrap zlib cups freetype alsa-lib
+      cpio file which zip perl zlib cups freetype alsa-lib
       libjpeg giflib libX11 libICE libXext libXrender libXtst libXt libXtst
-      libXi libXinerama libXcursor libXrandr fontconfig
+      libXi libXinerama libXcursor libXrandr fontconfig openjdk-bootstrap
     ] ++ lib.optionals (!headless && enableGnome2) [
       gtk2 gnome_vfs GConf glib
     ];
@@ -64,7 +67,7 @@ let
     '';
 
     configureFlags = [
-      "--with-boot-jdk=${openjdk8-bootstrap.home}"
+      "--with-boot-jdk=${openjdk-bootstrap.home}"
       "--with-update-version=${update}"
       "--with-build-number=${build}"
       "--with-milestone=fcs"
@@ -208,7 +211,7 @@ let
     meta = with lib; {
       homepage = "http://openjdk.java.net/";
       license = licenses.gpl2;
-      description = "The open-source Java Development Kit";
+      description = "Open-source Java Development Kit";
       maintainers = with maintainers; [ edwtjo ];
       platforms = [ "i686-linux" "x86_64-linux" "aarch64-linux" ];
       mainProgram = "java";

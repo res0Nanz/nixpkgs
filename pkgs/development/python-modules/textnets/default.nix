@@ -1,41 +1,48 @@
-{ lib
-, buildPythonPackage
-, cairocffi
-, cython
-, fetchFromGitHub
-, igraph
-, leidenalg
-, pandas
-, poetry-core
-, pytestCheckHook
-, pythonOlder
-, scipy
-, setuptools
-, spacy
-, en_core_web_sm
-, toolz
-, tqdm
-, wasabi
+{
+  lib,
+  buildPythonPackage,
+  cairocffi,
+  cython,
+  fetchPypi,
+  igraph,
+  leidenalg,
+  pandas,
+  poetry-core,
+  pytestCheckHook,
+  pythonOlder,
+  pythonRelaxDepsHook,
+  scipy,
+  setuptools,
+  spacy,
+  spacy-lookups-data,
+  en_core_web_sm,
+  toolz,
+  tqdm,
+  wasabi,
 }:
 
 buildPythonPackage rec {
   pname = "textnets";
-  version = "0.8.7";
+  version = "0.9.4";
   format = "pyproject";
 
   disabled = pythonOlder "3.8";
 
-  src = fetchFromGitHub {
-    owner = "jboynyc";
-    repo = pname;
-    rev = "refs/tags/v${version}";
-    hash = "sha256-BBndY+3leJBxiImuyRL7gMD5eocE4i96+97I9hDEwec=";
+  src = fetchPypi {
+    inherit pname version;
+    hash = "sha256-4154ytzo1QpwhKA1BkVMss9fNIkysnClW/yfSVlX33M=";
   };
 
   nativeBuildInputs = [
+    pythonRelaxDepsHook
     cython
     poetry-core
     setuptools
+  ];
+
+  pythonRelaxDeps = [
+    "igraph"
+    "leidenalg"
   ];
 
   propagatedBuildInputs = [
@@ -45,15 +52,10 @@ buildPythonPackage rec {
     pandas
     scipy
     spacy
+    spacy-lookups-data
     toolz
     tqdm
     wasabi
-  ];
-
-  # Deselect test of experimental feature that fails due to having an
-  # additional dependency.
-  disabledTests = [
-    "test_context"
   ];
 
   nativeCheckInputs = [
@@ -61,8 +63,16 @@ buildPythonPackage rec {
     en_core_web_sm
   ];
 
-  pythonImportsCheck = [
-    "textnets"
+  pythonImportsCheck = [ "textnets" ];
+
+  # Enables the package to find the cythonized .so files during testing. See #255262
+  preCheck = ''
+    rm -r textnets
+  '';
+
+  disabledTests = [
+    # Test fails: Throws a UserWarning asking the user to install `textnets[fca]`.
+    "test_context"
   ];
 
   meta = with lib; {

@@ -32,13 +32,13 @@ let
 in
 mkDerivation rec {
   pname = "renderdoc";
-  version = "1.25";
+  version = "1.33";
 
   src = fetchFromGitHub {
     owner = "baldurk";
     repo = "renderdoc";
     rev = "v${version}";
-    sha256 = "sha256-0+9fxNj0TZUQwOh9kww00/k/J8ciuWfYQS4e1aCcd7Y=";
+    sha256 = "sha256-BQR7ENgdblzamO5GgtLJriNiJFICsj0/iWVn1usxBjU=";
   };
 
   buildInputs = [
@@ -85,7 +85,7 @@ mkDerivation rec {
   passthru.updateScript = nix-update-script { };
 
   meta = with lib; {
-    description = "A single-frame graphics debugger";
+    description = "Single-frame graphics debugger";
     homepage = "https://renderdoc.org/";
     license = licenses.mit;
     longDescription = ''

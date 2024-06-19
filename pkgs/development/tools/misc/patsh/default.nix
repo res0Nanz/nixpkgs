@@ -18,16 +18,16 @@ in
 
 rustPlatform.buildRustPackage rec {
   pname = "patsh";
-  version = "0.2.0";
+  version = "0.2.1";
 
   src = fetchFromGitHub {
     owner = "nix-community";
-    repo = pname;
+    repo = "patsh";
     rev = "v${version}";
-    sha256 = "sha256-7HXJspebluQeejKYmVA7sy/F3dtU1gc4eAbKiPexMMA=";
+    sha256 = "sha256-d2Br4RAlKO7Bpse8sFbIDCIYd2fYvby0ar9oIbQS2jc=";
   };
 
-  cargoSha256 = "sha256-R6ScpLYbEJAu7+CyJsMdljtXq7wsMojHK5O1lH+E/E8=";
+  cargoHash = "sha256-hAWMm3YjwTB8ajn3QeXEOJYmPzbbitdwyO4k/IyhlOI=";
 
   nativeCheckInputs = [ custom ];
 
@@ -42,7 +42,8 @@ rustPlatform.buildRustPackage rec {
   '';
 
   meta = with lib; {
-    description = "A command-line tool for patching shell scripts inspired by resholve";
+    description = "Command-line tool for patching shell scripts inspired by resholve";
+    mainProgram = "patsh";
     homepage = "https://github.com/nix-community/patsh";
     changelog = "https://github.com/nix-community/patsh/blob/v${version}/CHANGELOG.md";
     license = licenses.mpl20;

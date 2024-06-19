@@ -5,16 +5,16 @@
 
 buildGoModule rec {
   pname = "gomplate";
-  version = "3.11.4";
+  version = "3.11.8";
 
   src = fetchFromGitHub {
     owner = "hairyhenderson";
     repo = pname;
     rev = "refs/tags/v${version}";
-    hash = "sha256-3WTscK2nmjd7+cUKGaAi9i+C3HFpuxb7eRCn0fOHFV4=";
+    hash = "sha256-pE9TLEBY1KQvgMFwVJfn5kojESqZURcbCwRt4jrexhk=";
   };
 
-  vendorHash = "sha256-X3o00WATVlWoc1Axug5ErPtLDQ+BL3CtO/QyNtavIpg=";
+  vendorHash = "sha256-09QUEudbWnO11iwJafF9zoYqbTr7SVBUiPWTHGnZ06Q=";
 
   postPatch = ''
     # some tests require network access
@@ -38,7 +38,8 @@ buildGoModule rec {
   ];
 
   meta = with lib; {
-    description = "A flexible commandline tool for template rendering";
+    description = "Flexible commandline tool for template rendering";
+    mainProgram = "gomplate";
     homepage = "https://gomplate.ca/";
     changelog = "https://github.com/hairyhenderson/gomplate/releases/tag/v${version}";
     license = licenses.mit;

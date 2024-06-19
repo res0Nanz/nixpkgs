@@ -1,58 +1,69 @@
-{ lib
-, buildPythonPackage
-, dissect-cim
-, dissect-clfs
-, dissect-cstruct
-, dissect-esedb
-, dissect-etl
-, dissect-eventlog
-, dissect-evidence
-, dissect-extfs
-, dissect-fat
-, dissect-ffs
-, dissect-executable
-, dissect-hypervisor
-, dissect-ntfs
-, dissect-ole
-, dissect-regf
-, dissect-shellitem
-, dissect-sql
-, dissect-squashfs
-, dissect-target
-, dissect-util
-, dissect-vmfs
-, dissect-volume
-, dissect-xfs
-, fetchFromGitHub
-, pythonOlder
-, setuptools
-, setuptools-scm
+{
+  lib,
+  buildPythonPackage,
+  dissect-archive,
+  dissect-btrfs,
+  dissect-cim,
+  dissect-clfs,
+  dissect-cobaltstrike,
+  dissect-cstruct,
+  dissect-esedb,
+  dissect-etl,
+  dissect-eventlog,
+  dissect-evidence,
+  dissect-executable,
+  dissect-extfs,
+  dissect-fat,
+  dissect-ffs,
+  dissect-hypervisor,
+  dissect-jffs,
+  dissect-ntfs,
+  dissect-ole,
+  dissect-regf,
+  dissect-shellitem,
+  dissect-sql,
+  dissect-squashfs,
+  dissect-target,
+  dissect-util,
+  dissect-vmfs,
+  dissect-volume,
+  dissect-xfs,
+  fetchFromGitHub,
+  pythonOlder,
+  pythonRelaxDepsHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dissect";
-  version = "3.4";
-  format = "pyproject";
+  version = "3.14";
+  pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "fox-it";
     repo = "dissect";
     rev = "refs/tags/${version}";
-    hash = "sha256-+t6v553lP9NEimNlp48NQ+6dpIOrgfZ1FU3LNJF44YY=";
+    hash = "sha256-wHLpysvOkJ1t0KKJXwfeRp/7mSom5WvrJ0lyRGoDwJM=";
   };
 
-  SETUPTOOLS_SCM_PRETEND_VERSION = version;
+  pythonRelaxDeps = true;
 
-  nativeBuildInputs = [
+  build-system = [
     setuptools
     setuptools-scm
   ];
 
-  propagatedBuildInputs = [
+  nativeBuildInputs = [ pythonRelaxDepsHook ];
+
+  dependencies = [
+    dissect-archive
+    dissect-btrfs
     dissect-cim
     dissect-clfs
+    dissect-cobaltstrike
     dissect-cstruct
     dissect-esedb
     dissect-etl
@@ -63,6 +74,7 @@ buildPythonPackage rec {
     dissect-fat
     dissect-ffs
     dissect-hypervisor
+    dissect-jffs
     dissect-ntfs
     dissect-ole
     dissect-regf
@@ -79,9 +91,7 @@ buildPythonPackage rec {
   # Module has no tests
   doCheck = false;
 
-  pythonImportsCheck = [
-    "dissect"
-  ];
+  pythonImportsCheck = [ "dissect" ];
 
   meta = with lib; {
     description = "Dissect meta module";

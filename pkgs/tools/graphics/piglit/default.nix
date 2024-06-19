@@ -40,7 +40,7 @@ stdenv.mkDerivation rec {
     libxcb
     libxkbcommon
     (python3.withPackages (ps: with ps; [
-      Mako
+      mako
       numpy
     ]))
     waffle
@@ -68,10 +68,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "An OpenGL test suite, and test-suite runner";
+    description = "OpenGL test suite, and test-suite runner";
     homepage = "https://gitlab.freedesktop.org/mesa/piglit";
     license = licenses.free; # custom license. See COPYING in the source repo.
     platforms = platforms.mesaPlatforms;
     maintainers = with maintainers; [ Flakebi ];
+    mainProgram = "piglit";
   };
 }

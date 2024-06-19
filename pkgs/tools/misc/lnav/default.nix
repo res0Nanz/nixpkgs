@@ -15,13 +15,13 @@
 
 stdenv.mkDerivation rec {
   pname = "lnav";
-  version = "0.11.1";
+  version = "0.11.2";
 
   src = fetchFromGitHub {
     owner = "tstack";
     repo = "lnav";
     rev = "v${version}";
-    sha256 = "sha256-W0NXmdbrarSmLOLpl9bt9kYjjDBtejGgh0QYeGFVMNQ=";
+    sha256 = "sha256-OuxxcXpdpSxrDdiUqRbEaXvCZBAcWvE4YwaMtLKSqCM=";
   };
 
   patches = [ ./0001-Forcefully-disable-docs-build.patch ];
@@ -55,7 +55,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://github.com/tstack/lnav";
-    description = "The Logfile Navigator";
+    description = "Logfile Navigator";
     longDescription = ''
       The log file navigator, lnav, is an enhanced log file viewer that takes
       advantage of any semantic information that can be gleaned from the files
@@ -69,6 +69,7 @@ stdenv.mkDerivation rec {
     license = licenses.bsd2;
     maintainers = with maintainers; [ dochang ];
     platforms = platforms.unix;
+    mainProgram = "lnav";
   };
 
 }

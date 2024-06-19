@@ -4,13 +4,13 @@ let
   data = import ./data.nix {};
 in stdenv.mkDerivation {
   pname = "pulumi";
-  version = data.version;
+  inherit (data) version;
 
   postUnpack = ''
     mv pulumi-* pulumi
   '';
 
-  srcs = map (x: fetchurl x) data.pulumiPkgs.${stdenv.hostPlatform.system};
+  srcs = map fetchurl data.pulumiPkgs.${stdenv.hostPlatform.system};
 
   installPhase = ''
     install -D -t $out/bin/ *
@@ -24,6 +24,7 @@ in stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ installShellFiles ] ++ lib.optionals stdenv.isLinux [ autoPatchelfHook makeWrapper ];
+  buildInputs = [ stdenv.cc.cc.libgcc or null ];
 
   meta = with lib; {
     homepage = "https://pulumi.io/";

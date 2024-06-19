@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchPypi
 , brotli
+, hatchling
 , certifi
 , ffmpeg
 , rtmpdump
@@ -9,6 +10,9 @@
 , pycryptodomex
 , websockets
 , mutagen
+, requests
+, secretstorage
+, urllib3
 , atomicparsleySupport ? true
 , ffmpegSupport ? true
 , rtmpSupport ? true
@@ -21,14 +25,29 @@ buildPythonPackage rec {
   # The websites yt-dlp deals with are a very moving target. That means that
   # downloads break constantly. Because of that, updates should always be backported
   # to the latest stable release.
-  version = "2023.3.4";
+  version = "2024.5.27";
+  pyproject = true;
 
   src = fetchPypi {
-    inherit pname version;
-    sha256 = "sha256-Jl1dqXp2wV19mkCIpnt4rNXc9vjP2CV8UvWB/5lv9RU=";
+    inherit version;
+    pname = "yt_dlp";
+    hash = "sha256-NWbA3iQNDNPRwihc5lX3LKON/GGNY01GgYsA2J1SiL4=";
   };
 
-  propagatedBuildInputs = [ brotli certifi mutagen pycryptodomex websockets ];
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    brotli
+    certifi
+    mutagen
+    pycryptodomex
+    requests
+    secretstorage  # "optional", as in not in requirements.txt, needed for `--cookies-from-browser`
+    urllib3
+    websockets
+  ];
 
   # Ensure these utilities are available in $PATH:
   # - ffmpeg: post-processing & transcoding support
@@ -40,7 +59,7 @@ buildPythonPackage rec {
         ++ lib.optional atomicparsleySupport atomicparsley
         ++ lib.optional ffmpegSupport ffmpeg
         ++ lib.optional rtmpSupport rtmpdump;
-    in lib.optionalString (packagesToBinPath != [])
+    in lib.optionals (packagesToBinPath != [])
     [ ''--prefix PATH : "${lib.makeBinPath packagesToBinPath}"'' ];
 
   setupPyBuildFlags = [
@@ -67,7 +86,9 @@ buildPythonPackage rec {
       youtube-dl is released to the public domain, which means
       you can modify it, redistribute it or use it however you like.
     '';
+    changelog = "https://github.com/yt-dlp/yt-dlp/releases/tag/${version}";
     license = licenses.unlicense;
-    maintainers = with maintainers; [ mkg20001 SuperSandro2000 marsam ];
+    maintainers = with maintainers; [ mkg20001 SuperSandro2000 ];
+    mainProgram = "yt-dlp";
   };
 }

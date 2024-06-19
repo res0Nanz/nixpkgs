@@ -9,14 +9,14 @@
 
 buildPythonPackage rec {
   pname = "poetry-plugin-up";
-  version = "0.2.1";
+  version = "0.7.1";
   format = "pyproject";
 
   src = fetchFromGitHub {
     owner = "MousaZeidBaker";
     repo = pname;
     rev = "refs/tags/${version}";
-    hash = "sha256-16p0emvgWa56Km8U5HualCSStbulqyINbC3Jez9Y1n0=";
+    hash = "sha256-ProwMnkg8LaPvb4aYyO1PR30iMSNE9oyKgCIX4O5j+E=";
   };
 
   nativeBuildInputs = [

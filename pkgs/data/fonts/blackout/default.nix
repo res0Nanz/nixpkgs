@@ -1,12 +1,12 @@
 { lib, fetchFromGitHub, stdenvNoCC }:
 
-stdenvNoCC.mkDerivation (self: {
+stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "blackout";
   version = "2014-07-29";
 
   src = fetchFromGitHub {
     owner = "theleagueof";
-    repo = self.pname;
+    repo = finalAttrs.pname;
     rev = "4864cfc1749590e9f78549c6e57116fe98480c0f";
     hash = "sha256-UmJVmtuPQYW/w+mdnJw9Ql4R1xf/07l+/Ky1wX9WKqw=";
   };
@@ -20,7 +20,7 @@ stdenvNoCC.mkDerivation (self: {
   '';
 
   meta = {
-    description = "A bad-ass, unholy-mother-shut-your-mouth stencil sans-serif";
+    description = "Bad-ass, unholy-mother-shut-your-mouth stencil sans-serif";
     longDescription = ''
       Eats holes for breakfast lunch and dinner. Inspired by filling in
       sans-serif newspaper headlines. Continually updated with coffee and

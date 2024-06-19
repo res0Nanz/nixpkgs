@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "goda";
-  version = "0.5.5";
+  version = "0.5.9";
 
   src = fetchFromGitHub {
     owner = "loov";
     repo = "goda";
     rev = "v${version}";
-    sha256 = "sha256-yKhgk/DRcifh+exxTZFti1Aac/sgpvUsNKdioLAzmX0=";
+    hash = "sha256-tkGIo4FWIFFMtp4rP0GJaF7B6lrmtjaAVx45G4wAPQg=";
   };
 
-  vendorSha256 = "sha256-BYYuB4ZlCWD8NILkf4qrgM4q72ZTy7Ze3ICUXdoI5Ms=";
+  vendorHash = "sha256-FYjlOYB0L4l6gF8hYtJroV1qMQD0ZmKWXBarjyConRs=";
 
   passthru.updateScript = nix-update-script { };
 

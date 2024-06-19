@@ -17,6 +17,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-qhKHdBf3bTZC2fTHIzAjgNgzF1Y51jpVZB0Bkopd230=";
   };
 
+  outputs = [ "out" "dev" ];
+
   patches = [
     # pull upstream fix for SDL1 cross-compilation.
     #   https://github.com/Libvisual/libvisual/pull/238
@@ -45,10 +47,13 @@ stdenv.mkDerivation rec {
   configureFlags = lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     # Remove once "sdl-cross-prereq.patch" patch above is removed.
     "--disable-lv-tool"
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "ac_cv_func_malloc_0_nonnull=yes"
+    "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
   meta = {
-    description = "An abstraction library for audio visualisations";
+    description = "Abstraction library for audio visualisations";
     homepage = "https://sourceforge.net/projects/libvisual/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;

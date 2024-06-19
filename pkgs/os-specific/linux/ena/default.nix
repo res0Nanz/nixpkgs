@@ -1,14 +1,14 @@
 { lib, stdenv, fetchFromGitHub, kernel }:
 
 stdenv.mkDerivation rec {
-  version = "2.8.3";
+  version = "2.12.0";
   name = "ena-${version}-${kernel.version}";
 
   src = fetchFromGitHub {
     owner = "amzn";
     repo = "amzn-drivers";
     rev = "ena_linux_${version}";
-    sha256 = "sha256-Z5BCqqC4FNKHqpocJ6CsHwhh5sszj5QfxiN6+Dkaqek=";
+    hash = "sha256-Z/eeIUY7Yl2l/IqK3Z2nxPhn+JLvP976IZ9ZXPBqoSo=";
   };
 
   hardeningDisable = [ "pic" ];
@@ -18,6 +18,12 @@ stdenv.mkDerivation rec {
 
   # linux 3.12
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+
+  patches = [
+    # Use kernel version checks instead of API feature detection
+    # See https://github.com/NixOS/nixpkgs/pull/310680
+    ./override-features-api-detection.patch
+  ];
 
   configurePhase = ''
     runHook preConfigure

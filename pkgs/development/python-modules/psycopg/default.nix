@@ -1,45 +1,47 @@
-{ lib
-, stdenv
-, buildPythonPackage
-, fetchFromGitHub
-, fetchurl
-, pythonOlder
-, substituteAll
+{
+  lib,
+  stdenv,
+  buildPythonPackage,
+  fetchFromGitHub,
+  fetchurl,
+  pythonOlder,
+  substituteAll,
 
-# build
-, postgresql
-, setuptools
+  # build
+  postgresql,
+  setuptools,
 
-# propagates
-, backports-zoneinfo
-, typing-extensions
+  # propagates
+  backports-zoneinfo,
+  typing-extensions,
 
-# psycopg-c
-, cython_3
-, tomli
+  # psycopg-c
+  cython,
+  tomli,
 
-# docs
-, furo
-, shapely
-, sphinxHook
-, sphinx-autodoc-typehints
+  # docs
+  furo,
+  shapely,
+  sphinxHook,
+  sphinx-autodoc-typehints,
 
-# tests
-, pproxy
-, pytest-asyncio
-, pytest-randomly
-, pytestCheckHook
+  # tests
+  anyio,
+  pproxy,
+  pytest-randomly,
+  pytestCheckHook,
+  postgresqlTestHook,
 }:
 
 let
   pname = "psycopg";
-  version = "3.1.8";
+  version = "3.1.17";
 
   src = fetchFromGitHub {
     owner = "psycopg";
     repo = pname;
     rev = "refs/tags/${version}";
-    hash = "sha256-VmuotHcLWd+k8/GLv0N2wSZR0sZjY+TmGBQjhpYE3YA=";
+    hash = "sha256-Paq4Wkvv6d6+fNcvRO/yfj7OWCMygqccKIdfsohHUMM=";
   };
 
   patches = [
@@ -51,7 +53,7 @@ let
   ];
 
   baseMeta = {
-    changelog = "https://github.com/psycopg/psycopg/blob/master/docs/news.rst";
+    changelog = "https://github.com/psycopg/psycopg/blob/${version}/docs/news.rst#current-release";
     homepage = "https://github.com/psycopg/psycopg";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ hexa ];
@@ -71,7 +73,7 @@ let
     '';
 
     nativeBuildInputs = [
-      cython_3
+      cython
       postgresql
       setuptools
       tomli
@@ -98,9 +100,7 @@ let
       cd psycopg_pool
     '';
 
-    propagatedBuildInputs = [
-      typing-extensions
-    ];
+    propagatedBuildInputs = [ typing-extensions ];
 
     # tested in psycopg
     doCheck = false;
@@ -109,7 +109,6 @@ let
       description = "Connection Pool for Psycopg";
     };
   };
-
 in
 
 buildPythonPackage rec {
@@ -127,8 +126,8 @@ buildPythonPackage rec {
 
   # Introduce this file necessary for the docs build via environment var
   LIBPQ_DOCS_FILE = fetchurl {
-    url = "https://raw.githubusercontent.com/postgres/postgres/REL_14_STABLE/doc/src/sgml/libpq.sgml";
-    hash = "sha256-yn09fR9+7zQni8SvTG7BUmYRD7MK7u2arVAznWz2oAw=";
+    url = "https://raw.githubusercontent.com/postgres/postgres/496a1dc44bf1261053da9b3f7e430769754298b4/doc/src/sgml/libpq.sgml";
+    hash = "sha256-JwtCngkoi9pb0pqIdNgukY8GbG5pUDZvrGAHZqjFOw4";
   };
 
   inherit patches;
@@ -148,11 +147,8 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [
     psycopg-c
-  ] ++ lib.optionals (pythonOlder "3.11") [
     typing-extensions
-  ] ++ lib.optionals (pythonOlder "3.9") [
-    backports-zoneinfo
-  ];
+  ] ++ lib.optionals (pythonOlder "3.9") [ backports-zoneinfo ];
 
   pythonImportsCheck = [
     "psycopg"
@@ -165,19 +161,31 @@ buildPythonPackage rec {
     pool = [ psycopg-pool ];
   };
 
-  preCheck = ''
-    cd ..
-  '';
+  nativeCheckInputs =
+    [
+      anyio
+      pproxy
+      pytest-randomly
+      pytestCheckHook
+      postgresql
+    ]
+    ++ lib.optional (stdenv.isLinux) postgresqlTestHook
+    ++ passthru.optional-dependencies.c
+    ++ passthru.optional-dependencies.pool;
 
-  nativeCheckInputs = [
-    pproxy
-    pytest-asyncio
-    pytest-randomly
-    pytestCheckHook
-    postgresql
-  ]
-  ++ passthru.optional-dependencies.c
-  ++ passthru.optional-dependencies.pool;
+  env = {
+    postgresqlEnableTCP = 1;
+    PGUSER = "psycopg";
+    PGDATABASE = "psycopg";
+  };
+
+  preCheck =
+    ''
+      cd ..
+    ''
+    + lib.optionalString (stdenv.isLinux) ''
+      export PSYCOPG_TEST_DSN="host=/build/run/postgresql user=$PGUSER"
+    '';
 
   disabledTests = [
     # don't depend on mypy for tests
@@ -195,8 +203,13 @@ buildPythonPackage rec {
   ];
 
   pytestFlagsArray = [
-    "-o" "cache_dir=$TMPDIR"
-    "-m" "'not timing'"
+    "-o"
+    "cache_dir=$TMPDIR"
+    "-m"
+    "'not refcount and not timing'"
+    # pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect
+    "-W"
+    "ignore::pytest.PytestRemovedIn9Warning"
   ];
 
   postCheck = ''

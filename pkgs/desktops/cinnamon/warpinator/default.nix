@@ -1,4 +1,5 @@
-{ fetchFromGitHub
+{ stdenv
+, fetchFromGitHub
 , lib
 , gobject-introspection
 , meson
@@ -6,31 +7,49 @@
 , python3
 , gtk3
 , gdk-pixbuf
-, wrapGAppsHook
+, xapp
+, wrapGAppsHook3
 , gettext
 , polkit
 , glib
 , gitUpdater
+, bubblewrap
 }:
 
-python3.pkgs.buildPythonApplication rec  {
+let
+  pythonEnv = python3.withPackages (pp: with pp; [
+    grpcio-tools
+    protobuf
+    pygobject3
+    setproctitle
+    pp.xapp
+    zeroconf
+    grpcio
+    setuptools
+    cryptography
+    pynacl
+    netifaces
+    netaddr
+    ifaddr
+    qrcode
+  ]);
+in
+stdenv.mkDerivation rec {
   pname = "warpinator";
-  version = "1.4.5";
-
-  format = "other";
+  version = "1.8.4";
 
   src = fetchFromGitHub {
     owner = "linuxmint";
     repo = pname;
     rev = version;
-    hash = "sha256-5mMV4WinpFR9ihgoQsgIXre0VpBdg9S8GjSkx+7ocLg=";
+    hash = "sha256-T1boMqzAGMjUD62ZAlWNOe3xUx5H5ZwpR7MNipy/LKA=";
   };
 
   nativeBuildInputs = [
     meson
     ninja
     gobject-introspection
-    wrapGAppsHook
+    wrapGAppsHook3
     gettext
     polkit # for its gettext
   ];
@@ -39,23 +58,12 @@ python3.pkgs.buildPythonApplication rec  {
     glib
     gtk3
     gdk-pixbuf
-  ];
-
-  propagatedBuildInputs = with python3.pkgs; [
-    grpcio-tools
-    protobuf
-    pygobject3
-    setproctitle
+    pythonEnv
     xapp
-    zeroconf
-    grpcio
-    setuptools
-    cryptography
-    pynacl
-    netifaces
   ];
 
   mesonFlags = [
+    "-Dbundle-grpc=false"
     "-Dbundle-zeroconf=false"
   ];
 
@@ -66,15 +74,13 @@ python3.pkgs.buildPythonApplication rec  {
     find . -type f -exec sed -i \
       -e s,/usr/libexec/warpinator,$out/libexec/warpinator,g \
       {} +
-  '';
 
-  dontWrapGApps = true; # Prevent double wrapping
-
-  preFixup = ''
-    # these get loaded via import from bin, so don't need wrapping
-    chmod -x+X $out/libexec/warpinator/*.py
-
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    # We make bubblewrap mode always available since
+    # landlock mode is not supported in old kernels.
+    substituteInPlace src/warpinator-launch.py \
+      --replace-fail '"/usr/bin/python3"' '"${pythonEnv.interpreter}"' \
+      --replace-fail "/usr/bin/bwrap" "${bubblewrap}/bin/bwrap" \
+      --replace-fail 'GLib.find_program_in_path("bwrap")' "True"
   '';
 
   passthru.updateScript = gitUpdater {

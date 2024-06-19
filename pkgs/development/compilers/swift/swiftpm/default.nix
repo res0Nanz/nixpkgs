@@ -1,6 +1,7 @@
 { lib
 , stdenv
 , callPackage
+, fetchpatch
 , cmake
 , ninja
 , git
@@ -8,6 +9,7 @@
 , swiftpm2nix
 , Foundation
 , XCTest
+, pkg-config
 , sqlite
 , ncurses
 , substituteAll
@@ -38,13 +40,12 @@ let
     propagatedBuildInputs = [ Foundation ];
     patches = [
       ./patches/cmake-disable-rpath.patch
+      ./patches/cmake-fix-quoting.patch
       ./patches/disable-index-store.patch
       ./patches/disable-sandbox.patch
+      ./patches/disable-xctest.patch
       ./patches/fix-clang-cxx.patch
-      (substituteAll {
-        src = ./patches/disable-xctest.patch;
-        inherit (builtins) storeDir;
-      })
+      ./patches/nix-pkgconfig-vars.patch
       (substituteAll {
         src = ./patches/fix-stdlib-path.patch;
         inherit (builtins) storeDir;
@@ -60,6 +61,21 @@ let
         --replace \
           'librariesPath = applicationPath.parentDirectory' \
           "librariesPath = AbsolutePath(\"$out\")"
+
+      # Fix case-sensitivity issues.
+      # Upstream PR: https://github.com/apple/swift-package-manager/pull/6500
+      substituteInPlace Sources/CMakeLists.txt \
+        --replace \
+          'packageCollectionsSigning' \
+          'PackageCollectionsSigning'
+      substituteInPlace Sources/PackageCollectionsSigning/CMakeLists.txt \
+        --replace \
+          'SubjectPublickeyInfo' \
+          'SubjectPublicKeyInfo'
+      substituteInPlace Sources/PackageCollections/CMakeLists.txt \
+        --replace \
+          'FilepackageCollectionsSourcesStorage' \
+          'FilePackageCollectionsSourcesStorage'
     '';
   };
 
@@ -67,12 +83,15 @@ let
   runtimeDeps = [ git ]
     ++ lib.optionals stdenv.isDarwin [
       xcbuild.xcrun
-      # vtool is used to determine a minimum deployment target. This is part of
-      # cctools, but adding that as a build input puts an unwrapped linker in
-      # PATH, and breaks builds. This small derivation exposes just vtool.
-      (runCommandLocal "vtool" { } ''
+      # These tools are part of cctools, but adding that as a build input puts
+      # an unwrapped linker in PATH, and breaks builds. This small derivation
+      # exposes just the tools we need:
+      # - vtool is used to determine a minimum deployment target.
+      # - libtool is used to build static libraries.
+      (runCommandLocal "swiftpm-cctools" { } ''
         mkdir -p $out/bin
         ln -s ${cctools}/bin/vtool $out/bin/vtool
+        ln -s ${cctools}/bin/libtool $out/bin/libtool
       '')
     ];
 
@@ -177,9 +196,23 @@ let
       '';
   };
 
+  # Part of this patch fixes for glibc 2.39: glibc patch 64b1a44183a3094672ed304532bedb9acc707554
+  # marks the `FILE*` argument to a few functions including `ferror` & `fread` as non-null. However
+  # the code passes an `Optional<T>` to these functions.
+  # This patch uses a `guard` which effectively unwraps the type (or throws an exception).
+  swift-tools-support-core-glibc-fix = fetchpatch {
+    url = "https://github.com/apple/swift-tools-support-core/commit/990afca47e75cce136d2f59e464577e68a164035.patch";
+    hash = "sha256-PLzWsp+syiUBHhEFS8+WyUcSae5p0Lhk7SSRdNvfouE=";
+    includes = [ "Sources/TSCBasic/FileSystem.swift" ];
+  };
+
   swift-tools-support-core = mkBootstrapDerivation {
     name = "swift-tools-support-core";
     src = generated.sources.swift-tools-support-core;
+
+    patches = [
+      swift-tools-support-core-glibc-fix
+    ];
 
     buildInputs = [
       swift-system
@@ -282,6 +315,12 @@ let
       swift-tools-support-core
     ];
 
+    postPatch = ''
+      # Tries to link against CYaml, but that's private.
+      substituteInPlace Sources/SwiftDriver/CMakeLists.txt \
+        --replace CYaml ""
+    '';
+
     postInstall = cmakeGlue.SwiftDriver + ''
       # Swift modules are not installed.
       mkdir -p $out/${swiftModuleSubdir}
@@ -294,8 +333,11 @@ let
     src = generated.sources.swift-crypto;
 
     postPatch = ''
+      # Fix use of hardcoded tool paths on Darwin.
       substituteInPlace CMakeLists.txt \
         --replace /usr/bin/ar $NIX_CC/bin/ar
+      substituteInPlace CMakeLists.txt \
+        --replace /usr/bin/ranlib $NIX_CC/bin/ranlib
     '';
 
     postInstall = cmakeGlue.SwiftCrypto + ''
@@ -313,6 +355,7 @@ let
 
     buildInputs = [
       llbuild
+      sqlite
       swift-argument-parser
       swift-collections
       swift-crypto
@@ -337,6 +380,7 @@ in stdenv.mkDerivation (commonAttrs // {
   pname = "swiftpm";
 
   nativeBuildInputs = commonAttrs.nativeBuildInputs ++ [
+    pkg-config
     swift
     swiftpm-bootstrap
   ];
@@ -356,6 +400,7 @@ in stdenv.mkDerivation (commonAttrs // {
     swiftpmMakeMutable swift-tools-support-core
     substituteInPlace .build/checkouts/swift-tools-support-core/Sources/TSCTestSupport/XCTestCasePerf.swift \
       --replace 'canImport(Darwin)' 'false'
+    patch -p1 -d .build/checkouts/swift-tools-support-core -i ${swift-tools-support-core-glibc-fix}
 
     # Prevent a warning about SDK directories we don't have.
     swiftpmMakeMutable swift-driver
@@ -385,10 +430,10 @@ in stdenv.mkDerivation (commonAttrs // {
 
     mkdir -p $out/bin $out/lib/swift
 
-    cp $binPath/swift-package $out/bin/
+    cp $binPath/swift-package-manager $out/bin/swift-package
     wrapProgram $out/bin/swift-package \
       --prefix PATH : ${lib.makeBinPath runtimeDeps}
-    for tool in swift-build swift-test swift-run swift-package-collection; do
+    for tool in swift-build swift-test swift-run swift-package-collection swift-experimental-destination; do
       ln -s $out/bin/swift-package $out/bin/$tool
     done
 
@@ -410,7 +455,7 @@ in stdenv.mkDerivation (commonAttrs // {
   setupHook = ./setup-hook.sh;
 
   meta = {
-    description = "The Package Manager for the Swift Programming Language";
+    description = "Package Manager for the Swift Programming Language";
     homepage = "https://github.com/apple/swift-package-manager";
     platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.asl20;

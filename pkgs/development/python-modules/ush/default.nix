@@ -1,19 +1,21 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pytestCheckHook
-, six
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "ush";
   version = "3.1.0";
+  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tarruda";
     repo = "python-ush";
     rev = version;
-    sha256 = "sha256-eL3vG3yS02enbLYorKvvYKbju9HInffUhrZgkodwhvo=";
+    hash = "sha256-eL3vG3yS02enbLYorKvvYKbju9HInffUhrZgkodwhvo=";
   };
 
   nativeCheckInputs = [

@@ -19,7 +19,13 @@ stdenv.mkDerivation rec {
     "--with-tkconfig=${tk}/lib"
   ];
 
-  CXXFLAGS = " --std=c++11 ";
+  env.CXXFLAGS = toString [
+    "-std=c++11"
+    "-DUSE_INTERP_RESULT"
+    "-Wno-writable-strings"
+  ];
+
+  enableParallelBuilding = true;
 
   hardeningDisable = [ "format" ];
 
@@ -47,9 +53,9 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "A programmable turn-based strategy game";
+    description = "Programmable turn-based strategy game";
     maintainers = with maintainers; [ raskin ];
-    platforms = platforms.linux;
+    platforms = platforms.unix;
     license = licenses.gpl2;
   };
 }

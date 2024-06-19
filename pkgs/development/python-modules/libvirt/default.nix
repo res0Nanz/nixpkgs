@@ -1,23 +1,37 @@
-{ lib, buildPythonPackage, fetchFromGitLab, pkg-config, lxml, libvirt, nose }:
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitLab,
+  setuptools,
+  pkg-config,
+  lxml,
+  libvirt,
+  pytestCheckHook,
+}:
 
 buildPythonPackage rec {
   pname = "libvirt";
-  version = "9.1.0";
+  version = "10.0.0";
+  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "libvirt";
     repo = "libvirt-python";
     rev = "v${version}";
-    sha256 = "sha256-kdWmgmkvI7yaqyFytPnHN6OtF+gsRe58q6AlXFycfQ8=";
+    hash = "sha256-zl1Hfm7flRflNjIpLoLAlPDysYlieC05HEd/mzFW8pU=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ libvirt lxml ];
+  build-system = [ setuptools ];
 
-  nativeCheckInputs = [ nose ];
-  checkPhase = ''
-    nosetests
-  '';
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [
+    libvirt
+    lxml
+  ];
+
+  pythonImportsCheck = [ "libvirt" ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = with lib; {
     homepage = "https://libvirt.org/python.html";

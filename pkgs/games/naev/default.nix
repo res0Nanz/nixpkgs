@@ -26,13 +26,13 @@
 
 stdenv.mkDerivation rec {
   pname = "naev";
-  version = "0.10.4";
+  version = "0.11.5";
 
   src = fetchFromGitHub {
     owner = "naev";
     repo = "naev";
     rev = "v${version}";
-    sha256 = "sha256-2cMRmKeoF6x5+95GoDgsoZG9QQo7qATrw/X+335l6FE=";
+    sha256 = "sha256-vdPkACgLGSTb9E/HZR5KoXn/fro0iHV7hX9kJim1j/M=";
     fetchSubmodules = true;
   };
 
@@ -42,7 +42,6 @@ stdenv.mkDerivation rec {
     enet
     freetype
     glpk
-    intltool
     libpng
     libunibreak
     libvorbis
@@ -61,6 +60,7 @@ stdenv.mkDerivation rec {
     meson
     ninja
     pkg-config
+    intltool
   ];
 
   mesonFlags = [
@@ -75,6 +75,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "2D action/rpg space game";
+    mainProgram = "naev";
     homepage = "http://www.naev.org";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ralismark ];

@@ -1,40 +1,43 @@
-{ lib
-, buildPythonPackage
-, editdistance-s
-, fetchFromGitHub
-, pytestCheckHook
-, pythonOlder
-, ukkonen
+{
+  lib,
+  buildPythonPackage,
+  editdistance-s,
+  fetchFromGitHub,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools,
+  ukkonen,
 }:
 
 buildPythonPackage rec {
   pname = "identify";
-  version = "2.5.19";
-  format = "setuptools";
+  version = "2.5.36";
+  pyproject = true;
 
-  disabled = pythonOlder "3.7";
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "pre-commit";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-+EY2x9PQ8MQsvLg4p1Oki5JLqYHatTsANLBwqS1y7kw=";
+    repo = "identify";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-CO+qP0FIUdPFXy6/7FgrKZbUp48XbgqqGV2GAX9ogMY=";
   };
 
-  nativeCheckInputs = [
+  build-system = [ setuptools ];
+
+  dependencies = [
     editdistance-s
     pytestCheckHook
     ukkonen
   ];
 
-  pythonImportsCheck = [
-    "identify"
-  ];
+  pythonImportsCheck = [ "identify" ];
 
   meta = with lib; {
     description = "File identification library for Python";
     homepage = "https://github.com/chriskuehl/identify";
     license = licenses.mit;
     maintainers = with maintainers; [ fab ];
+    mainProgram = "identify-cli";
   };
 }

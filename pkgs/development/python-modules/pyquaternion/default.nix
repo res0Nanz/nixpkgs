@@ -1,17 +1,19 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, numpy
-, nose
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  numpy,
+  nose,
 }:
 
 buildPythonPackage rec {
   pname = "pyquaternion";
   version = "0.9.9";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-sfYa8hnLL+lmtft5oZISTy5jo/end6w8rfKVexqBvqg=";
+    hash = "sha256-sfYa8hnLL+lmtft5oZISTy5jo/end6w8rfKVexqBvqg=";
   };
 
   # The VERSION.txt file is required for setup.py
@@ -26,7 +28,7 @@ buildPythonPackage rec {
   pythonImportsCheck = [ "pyquaternion" ];
 
   meta = with lib; {
-    description = "Library for representing and using quaternions.";
+    description = "Library for representing and using quaternions";
     homepage = "http://kieranwynn.github.io/pyquaternion/";
     license = licenses.mit;
     maintainers = with maintainers; [ lucasew ];

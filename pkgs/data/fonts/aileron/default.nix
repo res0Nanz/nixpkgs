@@ -4,12 +4,12 @@ let
   majorVersion = "0";
   minorVersion = "102";
 in
-stdenvNoCC.mkDerivation (self: {
+stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "aileron";
   version = "${majorVersion}.${minorVersion}";
 
   src = fetchzip {
-    url = "https://dotcolon.net/download/fonts/${self.pname}_${majorVersion}${minorVersion}.zip";
+    url = "https://dotcolon.net/download/fonts/${finalAttrs.pname}_${majorVersion}${minorVersion}.zip";
     hash = "sha256-Ht48gwJZrn0djo1yl6jHZ4+0b710FVwStiC1Zk5YXME=";
     stripRoot = false;
   };
@@ -23,8 +23,8 @@ stdenvNoCC.mkDerivation (self: {
   '';
 
   meta = with lib; {
-    homepage = "http://dotcolon.net/font/${self.pname}/";
-    description = "A helvetica font in nine weights";
+    homepage = "http://dotcolon.net/font/${finalAttrs.pname}/";
+    description = "Helvetica font in nine weights";
     platforms = platforms.all;
     maintainers = with maintainers; [ leenaars minijackson ];
     license = licenses.cc0;

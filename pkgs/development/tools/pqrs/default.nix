@@ -2,19 +2,20 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "pqrs";
-  version = "0.2.2";
+  version = "0.3.2";
 
   src = fetchFromGitHub {
     owner = "manojkarthick";
     repo = "pqrs";
     rev = "v${version}";
-    sha256 = "sha256-fqxPQUcd8DG+UYJRWLDJ9RpRkCWutEXjc6J+w1qv8PQ=";
+    sha256 = "sha256-0oSSoGZga0OGAKUNsLmKkUl8N1l0pVi4KIqrKJbeVVU=";
   };
 
-  cargoSha256 = "sha256-/nfVu8eiQ8JAAUplSyA4eCQqZPCSrcxFzdc2gV95a2w=";
+  cargoHash = "sha256-w0WD+EtVGFMGpS4a2DJrLdbunwF2yiONKQwdcQG2EB0=";
 
   meta = with lib; {
     description = "CLI tool to inspect Parquet files";
+    mainProgram = "pqrs";
     homepage = "https://github.com/manojkarthick/pqrs";
     license = with licenses; [ mit /* or */ asl20 ];
     maintainers = [ maintainers.manojkarthick ];

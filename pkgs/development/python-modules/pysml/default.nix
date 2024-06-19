@@ -1,29 +1,33 @@
-{ lib
-, async-timeout
-, bitstring
-, buildPythonPackage
-, fetchFromGitHub
-, poetry-core
-, pyserial-asyncio
+{
+  lib,
+  aiohttp,
+  async-timeout,
+  bitstring,
+  buildPythonPackage,
+  fetchFromGitHub,
+  poetry-core,
+  pyserial-asyncio,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "pysml";
-  version = "0.0.9";
+  version = "0.1.2";
   format = "pyproject";
+
+  disabled = pythonOlder "3.7";
 
   src = fetchFromGitHub {
     owner = "mtdcr";
     repo = pname;
-    rev = version;
-    sha256 = "sha256-pUbRttH/ksYcE1qZJAQWhuKk4+40w5xsul0TTqq1g3s=";
+    rev = "refs/tags/${version}";
+    hash = "sha256-TLIpc0bVx1As2oLyYD+BBMalwJiKdvBCcrd1tUNyh6Y=";
   };
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  nativeBuildInputs = [ poetry-core ];
 
   propagatedBuildInputs = [
+    aiohttp
     async-timeout
     bitstring
     pyserial-asyncio

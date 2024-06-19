@@ -9,7 +9,7 @@
 , fetchpatch
 , openssl
 , boost
-, sconsPackages
+, scons
 }:
 
 stdenv.mkDerivation rec {
@@ -35,7 +35,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = [
-    sconsPackages.scons_latest
+    scons
   ];
 
   buildInputs = [
@@ -80,7 +80,8 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = with lib; {
-    description = "An XMPP library for C++, used by the Swift client";
+    description = "XMPP library for C++, used by the Swift client";
+    mainProgram = "swiften-config";
     homepage = "http://swift.im/swiften.html";
     license = licenses.gpl2Plus;
     platforms = platforms.linux;

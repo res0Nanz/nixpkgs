@@ -1,9 +1,11 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, python
-, pythonOlder
-, unittestCheckHook
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  python,
+  pythonAtLeast,
+  pythonOlder,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
@@ -11,7 +13,9 @@ buildPythonPackage rec {
   version = "21.6.0";
   format = "setuptools";
 
-  disabled = pythonOlder "3.6";
+  # Python 3.11 not currently supported
+  # https://github.com/jazzband/contextlib2/issues/43
+  disabled = pythonOlder "3.6" || pythonAtLeast "3.11";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,9 +24,7 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ unittestCheckHook ];
 
-  pythonImportsCheck = [
-    "contextlib2"
-  ];
+  pythonImportsCheck = [ "contextlib2" ];
 
   meta = with lib; {
     description = "Backports and enhancements for the contextlib module";

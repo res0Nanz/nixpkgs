@@ -1,13 +1,13 @@
 {
-  "version": "3.150.0",
-  "appimage": {
+  "version": "3.181.23",
+  "deb": {
     "x86_64-linux": {
-      "url": "https://github.com/standardnotes/app/releases/download/%40standardnotes/desktop%403.150.0/standard-notes-3.150.0-linux-x86_64.AppImage",
-      "hash": "sha512-qDjZ/WQdxXCoTA2PVRiSrIukO+N6gB9UdK7Fed5cvd+xFGteSmfPpP7R6wbvTkxkAe4gkH57taeWg+Tt1jW+nA=="
+      "url": "https://github.com/standardnotes/app/releases/download/%40standardnotes/desktop%403.181.23/standard-notes-3.181.23-linux-amd64.deb",
+      "hash": "sha512-zWjST3guI0qifvZIwSLJ0nIpU12Mu3+m25Xdoqv0BQC7tscChEdCGUAJRUKHEf0b8l4uvp8qBGHiBOfbrIi//w=="
     },
     "aarch64-linux": {
-      "url": "https://github.com/standardnotes/app/releases/download/%40standardnotes/desktop%403.150.0/standard-notes-3.150.0-linux-arm64.AppImage",
-      "hash": "sha512-KxK5Z3x611kp2TU5MTxwBfPirlPRbe8zSbF4mjMGDuzmTK3beqHhIGUh4Lud5opMyvUlbVxQf4SxslMxh7uvmw=="
+      "url": "https://github.com/standardnotes/app/releases/download/%40standardnotes/desktop%403.181.23/standard-notes-3.181.23-linux-arm64.deb",
+      "hash": "sha512-7R5Ym44mrVgUiqdt6NL8F9uUUOroQRxwn30xKThyIQm2HGRUJivRfOws98El9zV8bKG1khk4DZaMiLQSMjrtaQ=="
     }
   }
 }

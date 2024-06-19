@@ -1,17 +1,17 @@
-{ pkgs, lib, fetchFromGitHub, buildNpmPackage, python3, nodejs, nixosTests }:
+{ lib, stdenv, fetchFromGitHub, buildNpmPackage, python3, nodejs, nixosTests }:
 
 buildNpmPackage rec {
   pname = "uptime-kuma";
-  version = "1.20.0";
+  version = "1.23.13";
 
   src = fetchFromGitHub {
     owner = "louislam";
     repo = "uptime-kuma";
     rev = version;
-    sha256 = "sha256-dMjhCsTjXOwxhvJeL25KNkFhRCbCuxG7Ccz8mP7P38A=";
+    hash = "sha256-7JWn78gRLzuXuZjhTvjdJ7JVtLOtQ08zyokqkPdzYh0=";
   };
 
-  npmDepsHash = "sha256-Ks6KYHP6+ym9PGJ1a5nMxT7JXZyknHeaCmAkjJuCTXU=";
+  npmDepsHash = "sha256-MKONzKCGYeMQK8JR9W9KiPLaqP/F0uAOzql4wZK4Sp4=";
 
   patches = [
     # Fixes the permissions of the database being not set correctly
@@ -25,6 +25,9 @@ buildNpmPackage rec {
 
   postInstall = ''
     cp -r dist $out/lib/node_modules/uptime-kuma/
+
+    # remove references to nodejs source
+    rm -r $out/lib/node_modules/uptime-kuma/node_modules/@louislam/sqlite3/build-tmp-napi-v6
   '';
 
   postFixup = ''
@@ -36,9 +39,13 @@ buildNpmPackage rec {
   passthru.tests.uptime-kuma = nixosTests.uptime-kuma;
 
   meta = with lib; {
-    description = "A fancy self-hosted monitoring tool";
+    description = "Fancy self-hosted monitoring tool";
+    mainProgram = "uptime-kuma-server";
     homepage = "https://github.com/louislam/uptime-kuma";
+    changelog = "https://github.com/louislam/uptime-kuma/releases/tag/${version}";
     license = licenses.mit;
     maintainers = with maintainers; [ julienmalka ];
+    # FileNotFoundError: [Errno 2] No such file or directory: 'xcrun'
+    broken = stdenv.isDarwin;
   };
 }

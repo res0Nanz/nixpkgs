@@ -1,18 +1,18 @@
 { lib, stdenv, fetchurl, fetchpatch, pkg-config, musl-fts
 , musl-obstack, m4, zlib, zstd, bzip2, bison, flex, gettext, xz, setupDebugInfoDirs
 , argp-standalone
-, enableDebuginfod ? false, sqlite, curl, libmicrohttpd, libarchive
+, enableDebuginfod ? true, sqlite, curl, libmicrohttpd, libarchive
 , gitUpdater
 }:
 
 # TODO: Look at the hardcoded paths to kernel, modules etc.
 stdenv.mkDerivation rec {
   pname = "elfutils";
-  version = "0.188";
+  version = "0.191";
 
   src = fetchurl {
     url = "https://sourceware.org/elfutils/ftp/${version}/${pname}-${version}.tar.bz2";
-    sha256 = "sha256-+4sOjQgCAFuaMJxgwdjeMt0pUbVvDDo8tW0hzgFZXf8=";
+    hash = "sha256-33bbcTZtHXCDZfx6bGDKSDmPFDZ+sriVTvyIlxR62HE=";
   };
 
   patches = [
@@ -36,18 +36,6 @@ stdenv.mkDerivation rec {
       name = "musl-strndupa.patch";
       url = "https://git.alpinelinux.org/aports/plain/main/elfutils/musl-strndupa.patch?id=2e3d4976eeffb4704cf83e2cc3306293b7c7b2e9";
       sha256 = "sha256-7daehJj1t0wPtQzTv+/Rpuqqs5Ng/EYnZzrcf2o/Lb0=";
-    })
-    (fetchpatch {
-      name = "use-curlopt_protocols_str-for-new-libcurl.patch";
-      url = "https://sourceware.org/git/?p=elfutils.git;a=patch;h=6560fb26a62ef135a804357ef4f15a47de3e49b3;hp=a5b07cdf9c491fb7a4a16598c482c68b718f59b9";
-      excludes = [ "debuginfod/ChangeLog" ]; # Doesn't apply
-      sha256 = "sha256-yjeliqojRGvfwbXynmxFGyKqAY7AEr0mbSGQEliYhZ4=";
-    })
-    (fetchpatch {
-      name = "fix-usage-of-deprecated-curlinfo.patch";
-      url = "https://sourceware.org/git/?p=elfutils.git;a=patch;h=d2bf497b12fbd49b4996ccf0744303ffd67735b1;hp=6ecd16410ce1fe5cb0ac5b7c3342c5cc330e3a04";
-      excludes = [ "debuginfod/ChangeLog" ]; # Doesn't apply
-      sha256 = "sha256-zMx/TazM7vXJre2XagIWvwRS8cd8pbzMTmAbpbqZmx0=";
     })
   ] ++ lib.optionals stdenv.hostPlatform.isMusl [ ./musl-error_h.patch ];
 
@@ -89,11 +77,17 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  # Backtrace unwinding tests rely on glibc-internal symbol names.
-  # Musl provides slightly different forms and fails.
-  # Let's disable tests there until musl support is fully upstreamed.
-  doCheck = !stdenv.hostPlatform.isMusl;
-  doInstallCheck = !stdenv.hostPlatform.isMusl;
+
+  doCheck =
+    # Backtrace unwinding tests rely on glibc-internal symbol names.
+    # Musl provides slightly different forms and fails.
+    # Let's disable tests there until musl support is fully upstreamed.
+    !stdenv.hostPlatform.isMusl
+    # Test suite tries using `uname` to determine whether certain tests
+    # can be executed, so we need to match build and host platform exactly.
+    && (stdenv.hostPlatform == stdenv.buildPlatform);
+  doInstallCheck = !stdenv.hostPlatform.isMusl
+    && (stdenv.hostPlatform == stdenv.buildPlatform);
 
   passthru.updateScript = gitUpdater {
     url = "https://sourceware.org/git/elfutils.git";
@@ -102,10 +96,10 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     homepage = "https://sourceware.org/elfutils/";
-    description = "A set of utilities to handle ELF objects";
+    description = "Set of utilities to handle ELF objects";
     platforms = platforms.linux;
     # https://lists.fedorahosted.org/pipermail/elfutils-devel/2014-November/004223.html
-    broken = stdenv.hostPlatform.isStatic;
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
     # licenses are GPL2 or LGPL3+ for libraries, GPL3+ for bins,
     # but since this package isn't split that way, all three are listed.
     license = with licenses; [ gpl2Only lgpl3Plus gpl3Plus ];

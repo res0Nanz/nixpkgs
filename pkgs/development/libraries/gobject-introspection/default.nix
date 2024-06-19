@@ -22,6 +22,7 @@
 , nixStoreDir ? builtins.storeDir
 , x11Support ? true
 , testers
+, propagateFullGlib ? true
 }:
 
 # now that gobject-introspection creates large .gir files (eg gtk3 case)
@@ -30,13 +31,16 @@
 
 let
   pythonModules = pp: [
-    pp.Mako
+    pp.mako
     pp.markdown
   ];
+
+  # https://discourse.gnome.org/t/dealing-with-glib-and-gobject-introspection-circular-dependency/18701
+  glib' = glib.override { withIntrospection = false; };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "gobject-introspection";
-  version = "1.74.0";
+  version = "1.80.1";
 
   # outputs TODO: share/gobject-introspection-1.0/tests is needed during build
   # by pygobject3 (and maybe others), but it's only searched in $out
@@ -45,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "mirror://gnome/sources/gobject-introspection/${lib.versions.majorMinor finalAttrs.version}/gobject-introspection-${finalAttrs.version}.tar.xz";
-    sha256 = "NHs6cZ5oukxp/y1X7iaJIz6owH/EkiBeVzOGd55C1lM=";
+    hash = "sha256-od98Qk4VvaGrY5wA6QUbmt9c6hqeUS+KYDtTzRmbxtg=";
   };
 
   patches = [
@@ -79,7 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Build definition checks for the Python modules needed at runtime by importing them.
     (buildPackages.python3.withPackages pythonModules)
     finalAttrs.setupHook # move .gir files
-  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ gobject-introspection-unwrapped ];
+    # can't use canExecute, we need prebuilt when cross
+  ] ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ gobject-introspection-unwrapped ];
 
   buildInputs = [
     (python3.withPackages pythonModules)
@@ -91,7 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [
     libffi
-    glib
+    (if propagateFullGlib then glib else glib')
   ];
 
   mesonFlags = [
@@ -106,8 +111,10 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (buildPackages) bash;
       buildlddtree = "${buildPackages.pax-utils}/bin/lddtree";
     }}"
-    "-Dgi_cross_use_prebuilt_gi=true"
     "-Dgi_cross_binary_wrapper=${stdenv.hostPlatform.emulator buildPackages}"
+    # can't use canExecute, we need prebuilt when cross
+  ] ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    "-Dgi_cross_use_prebuilt_gi=true"
   ];
 
   doCheck = !stdenv.isAarch64;
@@ -150,11 +157,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = with lib; {
-    description = "A middleware layer between C libraries and language bindings";
+    description = "Middleware layer between C libraries and language bindings";
     homepage = "https://gi.readthedocs.io/";
     maintainers = teams.gnome.members ++ (with maintainers; [ lovek323 artturin ]);
     pkgConfigModules = [ "gobject-introspection-1.0" ];
     platforms = platforms.unix;
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
     license = with licenses; [ gpl2 lgpl2 ];
 
     longDescription = ''

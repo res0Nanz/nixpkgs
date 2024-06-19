@@ -13,13 +13,13 @@
 stdenv.mkDerivation rec {
   pname = "${passthru.prettyName}-unwrapped";
   # nixpkgs-update: no auto update
-  version = "unstable-2023-01-30";
+  version = "0-unstable-2024-05-14";
 
   src = fetchFromGitHub {
     owner = "open-watcom";
     repo = "open-watcom-v2";
-    rev = "996740acdbb173499ec1bf2ba6c8942f2a374220";
-    sha256 = "sha256-9m+0e2v1Hk8jYZHqJwb1mN02WgGDArsWbF7Ut3Z5OIg=";
+    rev = "d3733a7fca1d02ad91b58b377ecb38e1293889db";
+    hash = "sha256-gDrmm7hd07lv0KhkP7Bys5qCuCCH+t/XvlftCYlCyI8=";
   };
 
   postPatch = ''
@@ -89,11 +89,13 @@ stdenv.mkDerivation rec {
     prettyName = "open-watcom-v2";
     updateScript = unstableGitUpdater {
       url = "https://github.com/open-watcom/open-watcom-v2.git";
+      # no numerical releases, monthly "YYYY-MM-DD-Build" tags and daily "Current-build", "Last-CI-build" & "Coverity-scan" retagging
+      hardcodeZeroVersion = true;
     };
   };
 
   meta = with lib; {
-    description = "The v2 fork of the Open Watcom suite of compilers and tools";
+    description = "V2 fork of the Open Watcom suite of compilers and tools";
     longDescription = ''
       A fork of Open Watcom: A C/C++/Fortran compiler and assembler suite
       targeting a multitude of architectures (x86, IA-32, Alpha AXP, MIPS,

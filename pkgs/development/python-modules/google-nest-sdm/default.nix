@@ -1,52 +1,56 @@
-{ lib
-, aiohttp
-, asynctest
-, buildPythonPackage
-, coreutils
-, fetchFromGitHub
-, google-auth
-, google-auth-oauthlib
-, google-cloud-pubsub
-, pytest-aiohttp
-, pytest-asyncio
-, pytestCheckHook
-, pythonOlder
-, requests-oauthlib
+{
+  lib,
+  aiohttp,
+  buildPythonPackage,
+  coreutils,
+  fetchFromGitHub,
+  google-auth,
+  google-auth-oauthlib,
+  google-cloud-pubsub,
+  mashumaro,
+  pytest-aiohttp,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonOlder,
+  requests-oauthlib,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-nest-sdm";
-  version = "2.2.4";
-  format = "setuptools";
+  version = "4.0.5";
+  pyproject = true;
 
-  disabled = pythonOlder "3.8";
+  disabled = pythonOlder "3.10";
 
   src = fetchFromGitHub {
     owner = "allenporter";
     repo = "python-google-nest-sdm";
     rev = "refs/tags/${version}";
-    hash = "sha256-HQzU6no/DV2QOC+LV7kUSrygTwgAvfMSmYIKaBd/PCE=";
+    hash = "sha256-SA2PlHiqvvbXmCg0WqehLDiIGEMDbzwbzbCX1klMHis=";
   };
 
-  propagatedBuildInputs = [
+  build-system = [ setuptools ];
+
+  dependencies = [
     aiohttp
     google-auth
     google-auth-oauthlib
     google-cloud-pubsub
+    mashumaro
     requests-oauthlib
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   nativeCheckInputs = [
-    asynctest
     coreutils
     pytest-aiohttp
     pytest-asyncio
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "google_nest_sdm"
-  ];
+  pythonImportsCheck = [ "google_nest_sdm" ];
 
   disabledTests = [
     "test_clip_preview_transcode"
@@ -59,5 +63,6 @@ buildPythonPackage rec {
     changelog = "https://github.com/allenporter/python-google-nest-sdm/releases/tag/${version}";
     license = licenses.asl20;
     maintainers = with maintainers; [ fab ];
+    mainProgram = "google_nest";
   };
 }

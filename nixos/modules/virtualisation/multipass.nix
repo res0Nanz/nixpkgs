@@ -10,19 +10,19 @@ in
 {
   options = {
     virtualisation.multipass = {
-      enable = lib.mkEnableOption (lib.mdDoc ''
+      enable = lib.mkEnableOption ''
         Multipass, a simple manager for virtualised Ubuntu instances.
-      '');
+      '';
 
       logLevel = lib.mkOption {
         type = lib.types.enum [ "error" "warning" "info" "debug" "trace" ];
         default = "debug";
-        description = lib.mdDoc ''
+        description = ''
           The logging verbosity of the multipassd binary.
         '';
       };
 
-      package = lib.mkPackageOptionMD pkgs "multipass" { };
+      package = lib.mkPackageOption pkgs "multipass" { };
     };
   };
 
@@ -33,8 +33,8 @@ in
       description = "Multipass orchestrates virtual Ubuntu instances.";
 
       wantedBy = [ "multi-user.target" ];
-      wants = [ "network.target" ];
-      after = [ "network.target" ];
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
 
       environment = {
         "XDG_DATA_HOME" = "/var/lib/multipass/data";

@@ -40,8 +40,8 @@
 , at-spi2-atk
 , at-spi2-core
 , autoPatchelfHook
-, wrapGAppsHook
-, qt5
+, wrapGAppsHook3
+, qt6
 , proprietaryCodecs ? false
 , vivaldi-ffmpeg-codecs
 }:
@@ -51,11 +51,11 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "opera";
-  version = "95.0.4635.37";
+  version = "110.0.5130.49";
 
   src = fetchurl {
     url = "${mirror}/${version}/linux/${pname}-stable_${version}_amd64.deb";
-    hash = "sha256-NQv9EVaBPfHygr76neYGACuk8A6Oc1GXAgizMa+jngw=";
+    hash = "sha256-ge2ne11BrODlvbu17G6xaLd4w2mIEsErtIaqlLY4os8=";
   };
 
   unpackPhase = "dpkg-deb -x $src .";
@@ -63,8 +63,8 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     dpkg
     autoPatchelfHook
-    wrapGAppsHook
-    qt5.wrapQtAppsHook
+    wrapGAppsHook3
+    qt6.wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -103,6 +103,7 @@ stdenv.mkDerivation rec {
     nss
     pango
     stdenv.cc.cc.lib
+    qt6.qtbase
   ];
 
   runtimeDependencies = [
@@ -118,7 +119,7 @@ stdenv.mkDerivation rec {
     # "Illegal instruction (core dumped)"
     gtk3
     gtk4
-  ] ++ lib.optional proprietaryCodecs [
+  ] ++ lib.optionals proprietaryCodecs [
     vivaldi-ffmpeg-codecs
   ];
 
@@ -128,6 +129,9 @@ stdenv.mkDerivation rec {
     mkdir -p $out/bin
     cp -r usr $out
     cp -r usr/share $out/share
+
+    # we already using QT6, autopatchelf wants to patch this as well
+    rm $out/usr/lib/x86_64-linux-gnu/opera/libqt5_shim.so
     ln -s $out/usr/bin/opera $out/bin/opera
   '';
 
@@ -137,5 +141,6 @@ stdenv.mkDerivation rec {
     platforms = [ "x86_64-linux" ];
     license = licenses.unfree;
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    maintainers = with maintainers; [ kindrowboat ];
   };
 }

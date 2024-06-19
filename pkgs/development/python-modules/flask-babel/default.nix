@@ -1,35 +1,36 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
 
-# build-system
-, poetry-core
+  # build-system
+  poetry-core,
 
-# docs
-, furo
-, sphinxHook
+  # docs
+  furo,
+  sphinxHook,
 
-# runtime
-, babel
-, flask
-, jinja2
-, pytz
+  # runtime
+  babel,
+  flask,
+  jinja2,
+  pytz,
 
-# tests
-, pytest-mock
-, pytestCheckHook
+  # tests
+  pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "flask-babel";
-  version = "3.0.1";
+  version = "4.0.0";
   format = "pyproject";
 
   src = fetchFromGitHub {
     owner = "python-babel";
     repo = "flask-babel";
     rev = "refs/tags/v${version}";
-    hash = "sha256-bHsB1f7dbZW4k8JteyZOwVCgWRDZMu21XdMcjM5NYjk=";
+    hash = "sha256-BAT+oupy4MCSjeZ4hFtSKMkGU9xZtc7Phnz1mIsb2Kc=";
   };
 
   outputs = [
@@ -50,9 +51,7 @@ buildPythonPackage rec {
     pytz
   ];
 
-  pythonImportsCheck = [
-    "flask_babel"
-  ];
+  pythonImportsCheck = [ "flask_babel" ];
 
   checkInputs = [
     pytest-mock

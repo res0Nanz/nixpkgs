@@ -15,13 +15,13 @@
 
 stdenv.mkDerivation rec {
   pname = "acme.sh";
-  version = "3.0.5";
+  version = "3.0.7";
 
   src = fetchFromGitHub {
     owner = "acmesh-official";
     repo = "acme.sh";
     rev = "refs/tags/${version}";
-    hash = "sha256-IDhJRIsk+a+tP+ZeNm6nGvkDh54M0uvAMnSWHbCF3E8=";
+    hash = "sha256-ymj97aWWOLen7YEfG72N2nyxlwuB/Su4+pgpWUuckgc=";
   };
 
   nativeBuildInputs = [
@@ -54,7 +54,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://acme.sh/";
     changelog = "https://github.com/acmesh-official/acme.sh/releases/tag/${version}";
-    description = "A pure Unix shell script implementing ACME client protocol";
+    description = "Pure Unix shell script implementing ACME client protocol";
     longDescription = ''
       An ACME Shell script: acme.sh
 
@@ -74,5 +74,6 @@ stdenv.mkDerivation rec {
     license = licenses.gpl3Only;
     maintainers = with lib.maintainers; [ mkaito ] ++ teams.serokell.members;
     inherit (coreutils.meta) platforms;
+    mainProgram = "acme.sh";
   };
 }

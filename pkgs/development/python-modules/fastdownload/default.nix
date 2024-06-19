@@ -1,23 +1,27 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, fastprogress
-, fastcore
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  fastprogress,
+  fastcore,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "fastdownload";
-  version = "0.0.6";
+  version = "0.0.7";
   format = "setuptools";
   disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-1ayb0zx8rFKDgqlq/tVVLqDkh47T5jofHt53r8bWr30=";
+    sha256 = "sha256-IFB+246JQGofvXd15uKj2BpN1jPdUGsOnPDhYT6DHWo=";
   };
 
-  propagatedBuildInputs = [ fastprogress fastcore ];
+  propagatedBuildInputs = [
+    fastprogress
+    fastcore
+  ];
 
   # no real tests
   doCheck = false;

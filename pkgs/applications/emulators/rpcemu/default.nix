@@ -7,13 +7,13 @@
 let
   inherit (qt5) qtbase qtmultimedia wrapQtAppsHook;
 in
-stdenv.mkDerivation (self: {
+stdenv.mkDerivation (finalAttrs: {
   pname = "rpcemu";
   version = "0.9.4";
 
   src = fetchhg {
     url = "http://www.home.marutan.net/hg/rpcemu";
-    rev = "release_${self.version}";
+    rev = "release_${finalAttrs.version}";
     sha256 = "sha256-UyjfTfUpSvJNFPkQWPKppxp/kO0hVGo5cE9RuCU8GJI=";
   };
 
@@ -47,6 +47,7 @@ stdenv.mkDerivation (self: {
   meta = {
     homepage = "https://www.marutan.net/rpcemu/index.php";
     description = "Risc PC Emulator";
+    mainProgram = "rpcemu-interpreter";
     longDescription = ''
       RPCEmu is an emulator of classic Acorn computer systems, such as the Risc
       PC and A7000. It runs on multiple platforms including Windows, Linux and

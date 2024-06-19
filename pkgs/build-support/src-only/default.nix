@@ -1,7 +1,6 @@
 { stdenv }:
 # srcOnly is a utility builder that only fetches and unpacks the given `src`,
-# maybe pathings it in the process with the optional `patches` and
-# `buildInputs` attributes.
+# and optionally patching with `patches` or adding build inputs.
 #
 # It can be invoked directly, or be used to wrap an existing derivation. Eg:
 #
@@ -14,7 +13,7 @@ let
 in
 stdenv.mkDerivation (args // {
   name = "${name}-source";
-  installPhase = "cp -r . $out";
+  installPhase = "cp -pr --reflink=auto -- . $out";
   outputs = [ "out" ];
   separateDebugInfo = false;
   dontUnpack = false;

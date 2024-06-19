@@ -1,10 +1,11 @@
-{ lib
-, buildPythonPackage
-, pythonOlder
-, fetchPypi
-, msrest
-, azure-common
-, azure-mgmt-core
+{
+  lib,
+  buildPythonPackage,
+  pythonOlder,
+  fetchPypi,
+  msrest,
+  azure-common,
+  azure-mgmt-core,
 }:
 
 buildPythonPackage rec {
@@ -18,7 +19,7 @@ buildPythonPackage rec {
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "sha256-ctRsmmJ4PsTqthm+nRt4/+u9qhZNQG/TA/FjA/NyVrI=";
+    hash = "sha256-ctRsmmJ4PsTqthm+nRt4/+u9qhZNQG/TA/FjA/NyVrI=";
   };
 
   propagatedBuildInputs = [

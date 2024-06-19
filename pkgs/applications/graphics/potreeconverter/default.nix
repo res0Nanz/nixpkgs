@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation rec {
   pname = "PotreeConverter";
-  version = "unstable-2022-08-04";
+  version = "unstable-2023-02-27";
 
   src = fetchFromGitHub {
     owner = "potree";
     repo = "PotreeConverter";
-    rev = "758bbac98a662de5e57d2280675e11cc76241688";
-    sha256 = "sha256-pDdV2/edYhhBWs153hSy1evI3cXD0Xq9nrEsw3JNcH4=";
+    rev = "af4666fa1090983d8ce7c11dcf49ba19eda90995";
+    sha256 = "sha256-QYNY+/v6mBEJFiv3i2QS+zqkgWJqeqXSqNoh+ChAiQA=";
   };
 
   buildInputs = [
@@ -28,13 +28,21 @@ stdenv.mkDerivation rec {
     cmake
   ];
 
-  patchPhase = ''
+  postPatch = ''
+    runHook prePatch
+
     substituteInPlace ./CMakeLists.txt \
       --replace "find_package(TBB REQUIRED)" ""
+
+    # prevent inheriting permissions from /nix/store when copying
+    substituteInPlace Converter/src/main.cpp --replace \
+      'fs::copy(templateDir, pagedir, fs::copy_options::overwrite_existing | fs::copy_options::recursive)' 'string cmd = "cp --no-preserve=mode -r " + templateDir + " " + pagedir; system(cmd.c_str());'
   '';
 
+  # The upstream build system does not provide an install target.
   installPhase = ''
     runHook preInstall
+
     mkdir -p $out/{bin,lib}
     mv liblaszip.so $out/lib
     mv PotreeConverter $out/bin
@@ -46,6 +54,10 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/PotreeConverter
 
     runHook postInstall
+  '';
+
+  postFixup = ''
+    ln -s $src/resources $out/bin/resources
   '';
 
   meta = with lib; {

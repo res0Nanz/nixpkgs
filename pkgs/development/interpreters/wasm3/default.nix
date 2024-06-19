@@ -18,14 +18,14 @@ stdenv.mkDerivation rec {
   ];
 
   installPhase = ''
-    runHook preInstal
+    runHook preInstall
     install -Dm755 wasm3 -t $out/bin
     runHook postInstall
   '';
 
   meta = with lib; {
     homepage = "https://github.com/wasm3/wasm3";
-    description = "The fastest WebAssembly interpreter, and the most universal runtime.";
+    description = "Fastest WebAssembly interpreter, and the most universal runtime";
     platforms = platforms.all;
     maintainers = with maintainers; [ malbarbo ];
     license = licenses.mit;

@@ -28,6 +28,7 @@ let
 
       meta = with lib; {
         description = "Dependency manager for the Crystal language";
+        mainProgram = "shards";
         license = licenses.asl20;
         maintainers = with maintainers; [ peterhoeg ];
         inherit (crystal.meta) homepage platforms;
@@ -37,8 +38,8 @@ let
 in
 rec {
   shards_0_17 = generic {
-    version = "0.17.2";
-    hash = "sha256-2HpoMgyi8jnWYiBHscECYiaRu2g0mAH+dCY1t5m/l1s=";
+    version = "0.17.4";
+    hash = "sha256-DAFKmr57fW2CWiexbP4Mvoqfh9ALpYEZv3NFK4Z4Zo4=";
   };
 
   shards = shards_0_17;

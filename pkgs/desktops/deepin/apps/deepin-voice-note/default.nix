@@ -9,6 +9,7 @@
 , dtkwidget
 , qt5integration
 , qt5platform-plugins
+, qtsvg
 , dde-qt-dbus-factory
 , qtmultimedia
 , qtwebengine
@@ -16,22 +17,27 @@
 , gst_all_1
 , gtest
 }:
+
 stdenv.mkDerivation rec {
   pname = "deepin-voice-note";
-  version = "5.10.22";
+  version = "6.0.15";
 
   src = fetchFromGitHub {
     owner = "linuxdeepin";
     repo = pname;
     rev = version;
-    sha256 = "sha256-ZDw/kGmhcoTPDUsZa9CYhrVbK4Uo75G0L4q4cCBPr7E=";
+    hash = "sha256-k6LFMs2/OQQyeGI5WXBGWkAAY4GeP8LaA8hTXFwbaCM=";
   };
 
+  patches = [
+    ./use_v23_dbus_interface.diff
+  ];
+
   postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace "/usr" "$out"
     substituteInPlace src/common/audiowatcher.cpp \
       --replace "/usr/share" "$out/share"
-    substituteInPlace assets/deepin-voice-note.desktop \
-      --replace "/usr/bin" "$out/bin"
   '';
 
   nativeBuildInputs = [
@@ -43,6 +49,7 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     qtbase
+    qtsvg
     dtkwidget
     qt5platform-plugins
     dde-qt-dbus-factory
@@ -56,9 +63,9 @@ stdenv.mkDerivation rec {
     gst-plugins-good
   ]);
 
-  cmakeFlags = [ "-DVERSION=${version}" ];
+  strictDeps = true;
 
-  env.NIX_CFLAGS_COMPILE = "-I${dde-qt-dbus-factory}/include/libdframeworkdbus-2.0";
+  cmakeFlags = [ "-DVERSION=${version}" ];
 
   # qt5integration must be placed before qtsvg in QT_PLUGIN_PATH
   qtWrapperArgs = [
@@ -71,6 +78,7 @@ stdenv.mkDerivation rec {
 
   meta = with lib; {
     description = "Simple memo software with texts and voice recordings";
+    mainProgram = "deepin-voice-note";
     homepage = "https://github.com/linuxdeepin/deepin-voice-note";
     license = licenses.gpl3Plus;
     platforms = platforms.linux;

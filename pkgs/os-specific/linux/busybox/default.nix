@@ -50,14 +50,14 @@ in
 
 stdenv.mkDerivation rec {
   pname = "busybox";
-  version = "1.36.0";
+  version = "1.36.1";
 
   # Note to whoever is updating busybox: please verify that:
   # nix-build pkgs/stdenv/linux/make-bootstrap-tools.nix -A test
   # still builds after the update.
   src = fetchurl {
     url = "https://busybox.net/downloads/${pname}-${version}.tar.bz2";
-    sha256 = "sha256-VCdQyK98smMOIBeAtPmfPczusG9QW0eexoJBweavYaU=";
+    sha256 = "sha256-uMwkyVdNgJ5yecO+NJeVxdXOtv3xnKcJ+AzeUOR94xQ=";
   };
 
   hardeningDisable = [ "format" "pie" ]
@@ -121,6 +121,10 @@ stdenv.mkDerivation rec {
     # Bump from 4KB, much faster I/O
     CONFIG_FEATURE_COPYBUF_KB 64
 
+    # Doesn't build with current kernel headers.
+    # https://bugs.busybox.net/show_bug.cgi?id=15934
+    CONFIG_TC n
+
     # Set the path for the udhcpc script
     CONFIG_UDHCPC_DEFAULT_SCRIPT "${outDispatchPath}"
 
@@ -159,12 +163,14 @@ stdenv.mkDerivation rec {
 
   doCheck = false; # tries to access the net
 
+  passthru.shellPath = "/bin/ash";
+
   meta = with lib; {
     description = "Tiny versions of common UNIX utilities in a single small executable";
     homepage = "https://busybox.net/";
     license = licenses.gpl2Only;
     maintainers = with maintainers; [ TethysSvensson qyliss ];
     platforms = platforms.linux;
-    priority = 10;
+    priority = 15; # below systemd (halt, init, poweroff, reboot) and coreutils
   };
 }

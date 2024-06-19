@@ -2,18 +2,18 @@
 
 buildGoModule rec{
   pname = "pinniped";
-  version = "0.22.0";
+  version = "0.30.0";
 
   src = fetchFromGitHub {
     owner = "vmware-tanzu";
     repo = "pinniped";
     rev = "v${version}";
-    sha256 = "sha256-gi6uFJFP3hdHJqH9y7Q8tUGRJECPHxbajU5BJeBcJzo=";
+    sha256 = "sha256-tF4MIWHn9NvuZ94mwEujUNs34lvbnmH7oc7ur/jbd9c=";
   };
 
   subPackages = "cmd/pinniped";
 
-  vendorHash = "sha256-4N8HtBeGeu22Go63dV0WBdbheXylButu+M9vZL7qOcU=";
+  vendorHash = "sha256-vqchVDAw63QyG8ZL2n+YGcMjVt8IUxkFUPHpWt0d/Qk=";
 
   ldflags = [ "-s" "-w" ];
 
@@ -28,6 +28,7 @@ buildGoModule rec{
 
   meta = with lib; {
     description = "Tool to securely log in to your Kubernetes clusters";
+    mainProgram = "pinniped";
     homepage = "https://pinniped.dev/";
     license = licenses.asl20;
     maintainers = with maintainers; [ bpaulin ];

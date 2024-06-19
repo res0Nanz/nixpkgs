@@ -1,23 +1,24 @@
-{ lib
-, aiohttp
-, buildPythonPackage
-, fetchPypi
-, pydantic
-, pytestCheckHook
-, pythonOlder
-, websockets
+{
+  lib,
+  aiohttp,
+  buildPythonPackage,
+  fetchPypi,
+  pydantic,
+  pytestCheckHook,
+  pythonOlder,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "aiolivisi";
-  version = "0.0.18";
+  version = "0.0.19";
   format = "setuptools";
 
   disabled = pythonOlder "3.8";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-8Cy2hhYrUBRfVb2hgil6Irk+iTJmJ8JL+5wvm4rm7kM=";
+    hash = "sha256-eT/sqLykd4gQVt972646mH+QArf7p/XQH53/UtsuKRs=";
   };
 
   postPatch = ''
@@ -36,9 +37,7 @@ buildPythonPackage rec {
   # Module has no tests
   doCheck = false;
 
-  pythonImportsCheck = [
-    "aiolivisi"
-  ];
+  pythonImportsCheck = [ "aiolivisi" ];
 
   meta = with lib; {
     description = "Module to communicate with LIVISI Smart Home Controller";

@@ -23,7 +23,7 @@
 , pkg-config
 , procps
 , python3
-, wrapGAppsHook
+, wrapGAppsHook3
 , xorg
 , yelp
 }:
@@ -60,7 +60,7 @@ python3.pkgs.buildPythonApplication rec {
     gobject-introspection
     intltool
     pkg-config
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -82,7 +82,7 @@ python3.pkgs.buildPythonApplication rec {
 
   pythonPath = with python3.pkgs; [
     dbus-python
-    distutils_extra
+    distutils-extra
     pyatspi
     pycairo
     pygobject3
@@ -107,9 +107,6 @@ python3.pkgs.buildPythonApplication rec {
 
     python3.pkgs.nose
   ];
-
-  # Temporary fix, see https://github.com/NixOS/nixpkgs/issues/56943
-  strictDeps = false;
 
   doCheck = false;
 

@@ -1,23 +1,24 @@
-{ lib
-, stdenv
-, anyio
-, buildPythonPackage
-, fetchFromGitHub
-, rustPlatform
-, setuptools-rust
-, pythonOlder
-, dirty-equals
-, pytest-mock
-, pytest-timeout
-, pytestCheckHook
-, python
-, CoreServices
-, libiconv
+{
+  lib,
+  stdenv,
+  anyio,
+  buildPythonPackage,
+  cargo,
+  fetchFromGitHub,
+  rustPlatform,
+  rustc,
+  pythonOlder,
+  dirty-equals,
+  pytest-mock,
+  pytest-timeout,
+  pytestCheckHook,
+  CoreServices,
+  libiconv,
 }:
 
 buildPythonPackage rec {
   pname = "watchfiles";
-  version = "0.18.1";
+  version = "0.21.0";
   format = "pyproject";
 
   disabled = pythonOlder "3.7";
@@ -26,13 +27,13 @@ buildPythonPackage rec {
     owner = "samuelcolvin";
     repo = pname;
     rev = "refs/tags/v${version}";
-    hash = "sha256-XEhu6M1hFi3/gAKZcei7KJSrIhhlZhlvZvbfyA6VLR4=";
+    hash = "sha256-/qNgkPF5N8jzSV3M0YFWvQngZ4Hf4WM/GBS1LtgFbWM=";
   };
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     inherit src;
     name = "${pname}-${version}";
-    hash = "sha256-IWONA3o+2emJ7cKEw5xYSMdWzGuUSwn1B70zUDzj7Cw=";
+    hash = "sha256-sqHTW1+E7Fp33KW6IYlNa77AYc2iCfaSoBRXzrhEKr8=";
   };
 
   buildInputs = lib.optionals stdenv.isDarwin [
@@ -41,16 +42,18 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [
-  ] ++ (with rustPlatform; [
-    cargoSetupHook
-    maturinBuildHook
-    rust.cargo
-    rust.rustc
-  ]);
-
-  propagatedBuildInputs = [
-    anyio
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    cargo
+    rustc
   ];
+
+  propagatedBuildInputs = [ anyio ];
+
+  # Tests need these permissions in order to use the FSEvents API on macOS.
+  sandboxProfile = ''
+    (allow mach-lookup (global-name "com.apple.FSEvents"))
+  '';
 
   nativeCheckInputs = [
     dirty-equals
@@ -67,12 +70,16 @@ buildPythonPackage rec {
     rm -rf watchfiles
   '';
 
-  pythonImportsCheck = [
-    "watchfiles"
+  disabledTests = [
+    #  BaseExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+    "test_awatch_interrupt_raise"
   ];
+
+  pythonImportsCheck = [ "watchfiles" ];
 
   meta = with lib; {
     description = "File watching and code reload";
+    mainProgram = "watchfiles";
     homepage = "https://watchfiles.helpmanual.io/";
     license = licenses.mit;
     maintainers = with maintainers; [ fab ];

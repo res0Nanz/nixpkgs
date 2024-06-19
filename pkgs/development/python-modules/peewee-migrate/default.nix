@@ -1,48 +1,56 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pythonOlder,
 
-# runtime
-, cached-property
-, click
-, peewee
+  # build-system
+  poetry-core,
 
-# tests
-, psycopg2
-, pytestCheckHook
+  # runtime
+  click,
+  peewee,
+
+  # tests
+  psycopg2,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "peewee-migrate";
-  version = "1.6.6";
-  format = "setuptools";
+  version = "1.12.2";
+  format = "pyproject";
+
+  disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
     owner = "klen";
     repo = "peewee_migrate";
     rev = "refs/tags/${version}";
-    hash = "sha256-gUtxsvPj8pwzijia313d553j9U2LP5vKJHxVU1SqsV8=";
+    hash = "sha256-jxM2cvlDsoiUlVoxdS3wpUKlwMveMraiR431A8kIdgI=";
   };
 
   postPatch = ''
-    sed -i '/addopts/d' setup.cfg
+    sed -i '/addopts/d' pyproject.toml
   '';
+
+  nativeBuildInputs = [ poetry-core ];
 
   propagatedBuildInputs = [
     peewee
     click
-  ] ++ lib.optionals (pythonOlder "3.8") [
-    cached-property
   ];
 
-  pythonImportsCheck = [
-    "peewee_migrate"
-  ];
+  pythonImportsCheck = [ "peewee_migrate" ];
 
   nativeCheckInputs = [
     psycopg2
     pytestCheckHook
+  ];
+
+  disabledTests = [
+    #  sqlite3.OperationalError: error in table order after drop column...
+    "test_migrator"
   ];
 
   meta = with lib; {

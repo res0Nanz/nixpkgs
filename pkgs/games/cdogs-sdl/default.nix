@@ -13,13 +13,13 @@
 
 stdenv.mkDerivation rec {
   pname = "cdogs-sdl";
-  version = "1.4.1";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     repo = pname;
     owner = "cxong";
     rev = version;
-    sha256 = "sha256-CH0P8OrRUXtuqAHxDKv4ziKYdwGTccLPwpzh4xo7lQc=";
+    sha256 = "sha256-bFHygaL0UrrprSZRPTdYIzO78IhMjiqhLCGr7TTajqc=";
   };
 
   postPatch = ''
@@ -49,6 +49,9 @@ stdenv.mkDerivation rec {
     gtk3-x11
     protobuf
   ];
+
+  # inlining failed in call to 'tinydir_open': --param max-inline-insns-single limit reached
+  hardeningDisable = [ "fortify3" ];
 
   meta = with lib; {
     homepage = "https://cxong.github.io/cdogs-sdl";

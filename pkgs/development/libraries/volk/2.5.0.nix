@@ -8,7 +8,7 @@
 , fetchpatch
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "volk";
   # Version 2.5.1 seems to cause a build issue for aarch64-darwin, see:
   # https://github.com/NixOS/nixpkgs/pull/160152#issuecomment-1043380478A
@@ -16,9 +16,9 @@ stdenv.mkDerivation rec {
 
   src = fetchFromGitHub {
     owner = "gnuradio";
-    repo = pname;
-    rev = "v${version}";
-    sha256 = "sha256-kI4IuO6TLplo5lLAGIPWQWtePcjIEWB9XaJDA6WlqSg=";
+    repo = "volk";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-XvX6emv30bSB29EFm6aC+j8NGOxWqHCNv0Hxtdrq/jc=";
     fetchSubmodules = true;
   };
 
@@ -45,17 +45,16 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     python3
-    python3.pkgs.Mako
+    python3.pkgs.mako
   ];
 
   doCheck = true;
 
   meta = with lib; {
     homepage = "http://libvolk.org/";
-    description = "The Vector Optimized Library of Kernels";
+    description = "Vector Optimized Library of Kernels";
     license = licenses.gpl3Plus;
     maintainers = with maintainers; [ doronbehar ];
     platforms = platforms.all;
   };
-}
-
+})

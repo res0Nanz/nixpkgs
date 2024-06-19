@@ -1,17 +1,32 @@
-{ lib, fetchPypi, openssl, buildPythonPackage
-, pytest, dnspython, pynacl, authres, python }:
+{
+  lib,
+  fetchPypi,
+  openssl,
+  buildPythonPackage,
+  pytest,
+  dnspython,
+  pynacl,
+  authres,
+  python,
+}:
 
 buildPythonPackage rec {
   pname = "dkimpy";
-  version = "1.1.1";
+  version = "1.1.6";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-dVl0S1qQGWkZCPCgxlPiBrbL9jbIxtZuGggnz8jsf5E=";
-};
+    hash = "sha256-DOctlh9EPo+fBWlLNUVC3uU04I4rjFtgxi1drKfB2g8=";
+  };
 
   nativeCheckInputs = [ pytest ];
-  propagatedBuildInputs =  [ openssl dnspython pynacl authres ];
+  propagatedBuildInputs = [
+    openssl
+    dnspython
+    pynacl
+    authres
+  ];
 
   patchPhase = ''
     substituteInPlace dkim/dknewkey.py --replace \

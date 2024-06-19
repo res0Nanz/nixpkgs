@@ -3,25 +3,29 @@
 , fetchFromGitHub
 , python3
 , unstableGitUpdater
+, makeWrapper
 }:
 
 stdenv.mkDerivation rec {
   pname = "klipper";
-  version = "unstable-2023-02-03";
+  version = "0.12.0-unstable-2024-06-05";
 
   src = fetchFromGitHub {
     owner = "KevinOConnor";
     repo = "klipper";
-    rev = "5644481590a16ac5b3d8c20874f0477d5d51a963";
-    sha256 = "sha256-OGFVcUPw0sqTbJyrMvCxp8nER9/42ZRN4zIrpm/qh4E=";
+    rev = "49c0ad6369670da574f550aa878ce9f6e1899e74";
+    sha256 = "sha256-9kzOIv5FS0+FqgrMD2rtWoX1ZbidOfrh6pOalru8HWo=";
   };
 
-  sourceRoot = "source/klippy";
+  sourceRoot = "${src.name}/klippy";
 
   # NB: This is needed for the postBuild step
-  nativeBuildInputs = [ (python3.withPackages ( p: with p; [ cffi ] )) ];
+  nativeBuildInputs = [
+    (python3.withPackages ( p: with p; [ cffi ] ))
+    makeWrapper
+  ];
 
-  buildInputs = [ (python3.withPackages (p: with p; [ cffi pyserial greenlet jinja2 markupsafe numpy ])) ];
+  buildInputs = [ (python3.withPackages (p: with p; [ can cffi pyserial greenlet jinja2 markupsafe numpy ])) ];
 
   # we need to run this to prebuild the chelper.
   postBuild = ''
@@ -34,6 +38,10 @@ stdenv.mkDerivation rec {
       substituteInPlace $file \
         --replace '/usr/bin/env python2' '/usr/bin/env python'
     done
+
+    # needed for cross compilation
+    substituteInPlace ./chelper/__init__.py \
+      --replace 'GCC_CMD = "gcc"' 'GCC_CMD = "${stdenv.cc.targetPrefix}cc"'
   '';
 
   # NB: We don't move the main entry point into `/bin`, or even symlink it,
@@ -49,14 +57,20 @@ stdenv.mkDerivation rec {
     cp -r $src/docs $out/lib/docs
     cp -r $src/config $out/lib/config
 
+    mkdir -p $out/bin
     chmod 755 $out/lib/klipper/klippy.py
+    makeWrapper $out/lib/klipper/klippy.py $out/bin/klippy --chdir $out/lib/klipper
     runHook postInstall
   '';
 
-  passthru.updateScript = unstableGitUpdater { url = meta.homepage; };
+  passthru.updateScript = unstableGitUpdater {
+    url = meta.homepage;
+    tagPrefix = "v";
+  };
 
   meta = with lib; {
-    description = "The Klipper 3D printer firmware";
+    description = "Klipper 3D printer firmware";
+    mainProgram = "klippy";
     homepage = "https://github.com/KevinOConnor/klipper";
     maintainers = with maintainers; [ lovesegfault zhaofengli cab404 ];
     platforms = platforms.linux;

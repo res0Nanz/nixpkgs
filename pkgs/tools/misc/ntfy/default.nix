@@ -1,6 +1,6 @@
 { lib
 , stdenv
-, python
+, python39
 , fetchFromGitHub
 , fetchpatch
 , withXmpp ? !stdenv.isDarwin
@@ -12,7 +12,16 @@
 }:
 
 let
-  ntfy-webpush = python.pkgs.callPackage ./webpush.nix { };
+  python = python39.override {
+    packageOverrides = self: super: {
+      ntfy-webpush = self.callPackage ./webpush.nix { };
+
+      # databases, on which slack-sdk depends, is incompatible with SQLAlchemy 2.0
+      sqlalchemy = super.sqlalchemy_1_4;
+
+      django = super.django_3;
+    };
+  };
 in python.pkgs.buildPythonApplication rec {
   pname = "ntfy";
   version = "2.7.0";
@@ -75,9 +84,10 @@ in python.pkgs.buildPythonApplication rec {
   '';
 
   meta = with lib; {
-    description = "A utility for sending notifications, on demand and when commands finish";
+    description = "Utility for sending notifications, on demand and when commands finish";
     homepage = "http://ntfy.rtfd.org/";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ jfrankenau kamilchm ];
+    maintainers = with maintainers; [ kamilchm ];
+    mainProgram = "ntfy";
   };
 }

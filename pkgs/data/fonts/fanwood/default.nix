@@ -1,12 +1,12 @@
 { lib, fetchFromGitHub, stdenvNoCC }:
 
-stdenvNoCC.mkDerivation (self: {
+stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "fanwood";
   version = "2011-05-11";
 
   src = fetchFromGitHub {
     owner = "theleagueof";
-    repo = self.pname;
+    repo = finalAttrs.pname;
     rev = "cbaaed9704e7d37d3dcdbdf0b472e9efd0e39432";
     hash = "sha256-OroFhhb4RxPHkx+/8PtFnxs1GQVXMPiYTd+2vnRbIjg=";
   };
@@ -20,7 +20,7 @@ stdenvNoCC.mkDerivation (self: {
   '';
 
   meta = {
-    description = "A serif based on the work of a famous Czech-American type designer of yesteryear";
+    description = "Serif based on the work of a famous Czech-American type designer of yesteryear";
     longDescription = ''
       Based on work of a famous Czech-American type designer of yesteryear. The
       package includes roman and italic.

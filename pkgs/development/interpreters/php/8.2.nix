@@ -1,11 +1,10 @@
-{ callPackage, lib, stdenv, fetchurl, ... }@_args:
+{ callPackage, ... }@_args:
 
 let
   base = callPackage ./generic.nix (_args // {
-    version = "8.2.3";
-    hash = "sha256-h7tYhl849eKUGBMCkVLOohAv4pYbtNaLiPgx3dBUjQ8=";
+    version = "8.2.20";
+    hash = "sha256-Xexvphx7nEeqHXZma+ZR8mQu0rz2zYY4xX41cc4qrGE=";
   });
-
 in
 base.withExtensions ({ all, ... }: with all; ([
   bcmath

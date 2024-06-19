@@ -12,6 +12,7 @@ buildDunePackage rec {
   pname = "pratter";
 
   minimalOCamlVersion = "4.08";
+  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "gabrielhdt";
@@ -26,7 +27,7 @@ buildDunePackage rec {
   doCheck = true;
 
   meta = with lib; {
-    description = "An extended Pratt parser";
+    description = "Extended Pratt parser";
     homepage = "https://github.com/gabrielhdt/pratter";
     license = licenses.bsd3;
     changelog = "https://github.com/gabrielhdt/pratter/raw/${version}/CHANGELOG.md";

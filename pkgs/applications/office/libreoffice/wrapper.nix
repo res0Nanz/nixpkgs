@@ -3,14 +3,18 @@
 # The unwrapped libreoffice derivation
 , unwrapped
 , makeWrapper
+, xorg # for lndir
 , runCommand
 , substituteAll
-# For Emulating wrapGAppsHook
+# For Emulating wrapGAppsHook3
 , gsettings-desktop-schemas
 , hicolor-icon-theme
 , dconf
 , librsvg
 , gdk-pixbuf
+# some scripts need these when used in conjuction with firejail
+, coreutils
+, gnugrep
 # Configuration options for the wrapper
 , extraMakeWrapperArgs ? []
 , dbusVerify ? stdenv.isLinux
@@ -18,6 +22,10 @@
 }:
 
 let
+  inherit (unwrapped) version;
+  major = lib.versions.major version;
+  minor = lib.versions.minor version;
+
   makeWrapperArgs = builtins.concatStringsSep " " ([
     "--set" "GDK_PIXBUF_MODULE_FILE" "${librsvg}/${gdk-pixbuf.moduleDir}.cache"
     "--prefix" "GIO_EXTRA_MODULES" ":" "${lib.getLib dconf}/lib/gio/modules"
@@ -27,6 +35,7 @@ let
     "--prefix" "XDG_DATA_DIRS" ":" "${hicolor-icon-theme}/share"
     "--prefix" "GST_PLUGIN_SYSTEM_PATH_1_0" ":"
       "${lib.makeSearchPath "lib/girepository-1.0" unwrapped.gst_packages}"
+    "--suffix" "PATH" ":" "${lib.makeBinPath [ coreutils gnugrep ]}"
   ] ++ lib.optionals unwrapped.kdeIntegration [
     "--prefix" "QT_PLUGIN_PATH" ":" "${
       lib.makeSearchPath
@@ -70,14 +79,13 @@ let
       fi
     '')
   ] ++ [
-    "--chdir" "${unwrapped}/lib/libreoffice/program"
     "--inherit-argv0"
   ] ++ extraMakeWrapperArgs
   );
 in runCommand "${unwrapped.name}-wrapped" {
   inherit (unwrapped) meta;
   paths = [ unwrapped ];
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ makeWrapper xorg.lndir ];
   passthru = {
     inherit unwrapped;
     # For backwards compatibility:
@@ -85,17 +93,39 @@ in runCommand "${unwrapped.name}-wrapped" {
     inherit (unwrapped) kdeIntegration;
   };
 } (''
-  mkdir -p "$out/bin"
-  ln -s ${unwrapped}/share $out/share
-  ln -s ${unwrapped}/lib $out/lib
+  mkdir -p $out/share
+  for dir in ${unwrapped}/share/*; do
+    dirname="''${dir##*/}"
+    if [[ $dirname == "applications" ]]; then
+      cp -r $dir/ $out/share/
+    else
+      ln -s $dir $out/share/
+    fi
+  done
+  for f in $out/share/applications/*.desktop; do
+    substituteInPlace "$f" \
+      --replace "Exec=libreoffice${major}.${minor}" "Exec=soffice"
+  done
+
+  mkdir -p $out/bin
+  mkdir -p $out/lib/libreoffice/program
+  lndir -silent ${unwrapped}/lib/libreoffice/program $out/lib/libreoffice/program
   for i in sbase scalc sdraw smath swriter simpress soffice unopkg; do
-    makeWrapper ${unwrapped}/lib/libreoffice/program/$i $out/bin/$i ${makeWrapperArgs}
+    # Delete the symlink created by lndir, and replace it by our wrapper
+    rm $out/lib/libreoffice/program/$i
+    makeWrapper \
+      ${unwrapped}/lib/libreoffice/program/$i \
+      $out/lib/libreoffice/program/$i \
+      ${makeWrapperArgs}
 '' + lib.optionalString dbusVerify ''
     # Delete the dbus socket directory after libreoffice quits
-    sed -i 's/^exec -a "$0" //g' $out/bin/"$i"
-    echo 'code="$?"' >> $out/bin/$i
-    echo 'test -n "$dbus_socket_dir" && { rm -rf "$dbus_socket_dir"; kill $dbus_pid; }' >> $out/bin/$i
-    echo 'exit "$code"' >> $out/bin/$i
+    sed -i 's/^exec -a "$0" //g' $out/lib/libreoffice/program/$i
+    echo 'code="$?"' >> $out/lib/libreoffice/program/$i
+    echo 'test -n "$dbus_socket_dir" && { rm -rf "$dbus_socket_dir"; kill $dbus_pid; }' >> $out/lib/libreoffice/program/$i
+    echo 'exit "$code"' >> $out/lib/libreoffice/program/$i
 '' + ''
+    ln -s $out/lib/libreoffice/program/$i $out/bin/$i
   done
+  # A symlink many users rely upon
+  ln -s $out/bin/soffice $out/bin/libreoffice
 '')

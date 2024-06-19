@@ -1,19 +1,37 @@
-{ pkgsBuildBuild, go, buildGoModule, stdenv, lib, procps, fetchFromGitHub, nixosTests }:
+{ pkgsBuildBuild
+, go
+, buildGoModule
+, stdenv
+, lib
+, procps
+, fetchFromGitHub
+, nixosTests
+, autoSignDarwinBinariesHook
+}:
 
 let
   common = { stname, target, postInstall ? "" }:
     buildGoModule rec {
       pname = stname;
-      version = "1.23.2";
+      version = "1.27.8";
 
       src = fetchFromGitHub {
         owner = "syncthing";
         repo = "syncthing";
         rev = "v${version}";
-        hash = "sha256-EowUQYfSznTuAHV7OIesFPM99zRmeKkzYNp7VANtR2U=";
+        hash = "sha256-+uyN/x/nFB/YAOvIqO1IIs3UH+yn/eKMBW1Ap9PvhRM=";
       };
 
-      vendorHash = "sha256-5NgflkRXkbWiIkASmxIgWliE8sF89HtlMtlIF+5u6Ic=";
+      vendorHash = "sha256-fzNpdriCRr4M3oW8IaImnGEN4G9AQwLZNFHg00zbIs0=";
+
+      nativeBuildInputs = lib.optionals stdenv.isDarwin [
+        # Recent versions of macOS seem to require binaries to be signed when
+        # run from Launch Agents/Daemons, even on x86 devices where it has a
+        # more lax code signing policy compared to Apple Silicon. So just sign
+        # the binaries on both architectures to make it possible for launchd to
+        # auto-start Syncthing at login.
+        autoSignDarwinBinariesHook
+      ];
 
       doCheck = false;
 
@@ -48,7 +66,7 @@ let
         description = "Open Source Continuous File Synchronization";
         changelog = "https://github.com/syncthing/syncthing/releases/tag/v${version}";
         license = licenses.mpl20;
-        maintainers = with maintainers; [ joko peterhoeg andrew-d ];
+        maintainers = with maintainers; [ joko peterhoeg ];
         mainProgram = target;
         platforms = platforms.unix;
       };

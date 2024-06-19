@@ -1,81 +1,50 @@
 { lib
 , python3
-, fetchurl
+, fetchFromGitHub
+, fetchYarnDeps
 , zlib
-, mkYarnModules
-, sphinx
 , nixosTests
-, pkgs
-, fetchPypi
 , postgresqlTestHook
 , postgresql
+, yarn
+, fixup-yarn-lock
+, nodejs
+, stdenv
 , server-mode ? true
 }:
 
 let
   pname = "pgadmin";
-  version = "6.20";
+  version = "8.8";
+  yarnHash = "sha256-dBgbgZrjF1rNyN1Hp1nKiT6C6FVbYdbEZQgYbRKVsYI=";
 
-  src = fetchurl {
-    url = "https://ftp.postgresql.org/pub/pgadmin/pgadmin4/v${version}/source/pgadmin4-${version}.tar.gz";
-    sha256 = "sha256-6aQvg98LymZGAgAcNX5Xhw/aRdE5h4HOCPS+kQnkstU=";
+  src = fetchFromGitHub {
+    owner = "pgadmin-org";
+    repo = "pgadmin4";
+    rev = "REL-${lib.versions.major version}_${lib.versions.minor version}";
+    hash = "sha256-203tuxtYOn1fD1m8BGL6rt5lDDr5V38ybPy+iwmZpkk=";
   };
-
-  yarnDeps = mkYarnModules {
-    pname = "${pname}-yarn-deps";
-    inherit version;
-    packageJSON = ./package.json;
-    yarnLock = ./yarn.lock;
-    yarnNix = ./yarn.nix;
-  };
-
 
   # keep the scope, as it is used throughout the derivation and tests
   # this also makes potential future overrides easier
-  pythonPackages = python3.pkgs.overrideScope (final: prev: rec {
-    # flask-security-too 4.1.5 is incompatible with flask-babel 3.x
-    flask-babel = prev.flask-babel.overridePythonAttrs (oldAttrs: rec {
-      version = "2.0.0";
-      src = fetchPypi {
-        inherit pname version;
-        sha256 = "f9faf45cdb2e1a32ea2ec14403587d4295108f35017a7821a2b1acb8cfd9257d";
-      };
-      nativeBuildInputs = [ ];
-      format = "setuptools";
-      outputs = [ "out" ];
-    });
-    # flask 2.2 is incompatible with pgadmin 6.18
-    # https://redmine.postgresql.org/issues/7651
-    flask = prev.flask.overridePythonAttrs (oldAttrs: rec {
-      version = "2.1.3";
-      src = oldAttrs.src.override {
-        inherit version;
-        sha256 = "sha256-FZcuUBffBXXD1sCQuhaLbbkCWeYgrI1+qBOjlrrVtss=";
-      };
-    });
-    # flask 2.1.3 is incompatible with flask-sqlalchemy > 3
-    flask-sqlalchemy = prev.flask-sqlalchemy.overridePythonAttrs (oldAttrs: rec {
-      version = "2.5.1";
-      format = "setuptools";
-      src = oldAttrs.src.override {
-        inherit version;
-        hash = "sha256-K9pEtD58rLFdTgX/PMH4vJeTbMRkYjQkECv8LDXpWRI=";
-      };
-    });
-    # pgadmin 6.19 is incompatible with the major flask-security-too update to 5.0.x
-    flask-security-too = prev.flask-security-too.overridePythonAttrs (oldAttrs: rec {
-      version = "4.1.5";
-      src = oldAttrs.src.override {
-        inherit version;
-        hash = "sha256-98jKcHDv/+mls7QVWeGvGcmoYOGCspxM7w5/2RjJxoM=";
-      };
-      propagatedBuildInputs = oldAttrs.propagatedBuildInputs ++ [
-        final.pythonPackages.flask_mail
-        final.pythonPackages.pyqrcode
-      ];
-    });
-  });
+  pythonPackages = python3.pkgs.overrideScope (final: prev: rec { });
 
+  offlineCache = fetchYarnDeps {
+    yarnLock = ./yarn.lock;
+    hash = yarnHash;
+  };
+
+  # don't bother to test kerberos authentication
+  # skip tests on macOS which fail due to an error in keyring, see https://github.com/NixOS/nixpkgs/issues/281214
+  skippedTests = builtins.concatStringsSep "," (
+    [ "browser.tests.test_kerberos_with_mocking" ]
+    ++ lib.optionals stdenv.isDarwin [
+      "browser.server_groups.servers.tests.test_all_server_get"
+      "browser.server_groups.servers.tests.test_check_connect"
+      "browser.server_groups.servers.tests.test_check_ssh_mock_connect"
+      "browser.server_groups.servers.tests.test_is_password_saved"
+    ]
+  );
 in
 
 pythonPackages.buildPythonApplication rec {
@@ -97,20 +66,23 @@ pythonPackages.buildPythonApplication rec {
     # patching Makefile, so it doesn't try to build sphinx documentation here
     # (will do so later)
     substituteInPlace Makefile \
-      --replace 'LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 $(MAKE) -C docs/en_US -f Makefile.sphinx html' "true"
+      --replace-fail 'LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 $(MAKE) -C docs/en_US -f Makefile.sphinx html' "true"
 
     # fix document which refers a non-existing document and fails
     substituteInPlace docs/en_US/contributions.rst \
-      --replace "code_snippets" ""
-    patchShebangs .
-
+      --replace-fail "code_snippets" ""
     # relax dependencies
     sed 's|==|>=|g' -i requirements.txt
+    # fix extra_require error with "*" in match
+    sed 's|*|0|g' -i requirements.txt
+    # remove packageManager from package.json so we can work without corepack
+    substituteInPlace web/package.json \
+      --replace-fail "\"packageManager\": \"yarn@3.6.4\"" "\"\": \"\""
     substituteInPlace pkg/pip/setup_pip.py \
-      --replace "req = req.replace('psycopg2', 'psycopg2-binary')" "req = req"
+      --replace-fail "req = req.replace('psycopg[c]', 'psycopg[binary]')" "req = req"
     ${lib.optionalString (!server-mode) ''
     substituteInPlace web/config.py \
-      --replace "SERVER_MODE = True" "SERVER_MODE = False"
+      --replace-fail "SERVER_MODE = True" "SERVER_MODE = False"
     ''}
   '';
 
@@ -119,14 +91,12 @@ pythonPackages.buildPythonApplication rec {
     echo Creating required directories...
     mkdir -p pip-build/pgadmin4/docs
 
-    # build the documentation
+    echo Building the documentation
     cd docs/en_US
     sphinx-build -W -b html -d _build/doctrees . _build/html
 
     # Build the clean tree
-    cd ../../web
-    cp -r * ../pip-build/pgadmin4
-    cd ../docs
+    cd ..
     cp -r * ../pip-build/pgadmin4/docs
     for DIR in `ls -d ??_??/`
     do
@@ -137,7 +107,24 @@ pythonPackages.buildPythonApplication rec {
     done
     cd ../
 
-    cp -r ${yarnDeps}/* pip-build/pgadmin4
+    # mkYarnModules and mkYarnPackage have problems running the webpacker
+    echo Building the web frontend...
+    cd web
+    export HOME="$TMPDIR"
+    yarn config --offline set yarn-offline-mirror "${offlineCache}"
+    # replace with converted yarn.lock file
+    rm yarn.lock
+    cp ${./yarn.lock} yarn.lock
+    chmod +w yarn.lock
+    fixup-yarn-lock yarn.lock
+    yarn install --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive
+    patchShebangs node_modules/
+    yarn webpacker
+    cp -r * ../pip-build/pgadmin4
+    # save some disk space
+    rm -rf ../pip-build/pgadmin4/node_modules
+
+    cd ..
 
     echo Creating distro config...
     echo HELP_PATH = \'../../docs/en_US/_build/html/\' > pip-build/pgadmin4/config_distro.py
@@ -153,7 +140,7 @@ pythonPackages.buildPythonApplication rec {
     cp -v ../pkg/pip/setup_pip.py setup.py
   '';
 
-  nativeBuildInputs = with pythonPackages; [ cython pip sphinx ];
+  nativeBuildInputs = with pythonPackages; [ cython pip sphinx yarn fixup-yarn-lock nodejs ];
   buildInputs = [
     zlib
     pythonPackages.wheel
@@ -161,10 +148,9 @@ pythonPackages.buildPythonApplication rec {
 
   propagatedBuildInputs = with pythonPackages; [
     flask
-    flask-gravatar
     flask-login
-    flask_mail
-    flask_migrate
+    flask-mail
+    flask-migrate
     flask-sqlalchemy
     flask-wtf
     flask-compress
@@ -175,7 +161,7 @@ pythonPackages.buildPythonApplication rec {
     wtforms
     flask-paranoid
     psutil
-    psycopg2
+    psycopg
     python-dateutil
     sqlalchemy
     itsdangerous
@@ -184,7 +170,6 @@ pythonPackages.buildPythonApplication rec {
     cryptography
     sshtunnel
     ldap3
-    flask-babelex
     flask-babel
     gssapi
     flask-socketio
@@ -206,6 +191,13 @@ pythonPackages.buildPythonApplication rec {
     dnspython
     greenlet
     speaklater3
+    google-auth-oauthlib
+    google-api-python-client
+    keyring
+    typer
+    rich
+    jsonformatter
+    libgravatar
   ];
 
   passthru.tests = {
@@ -218,6 +210,9 @@ pythonPackages.buildPythonApplication rec {
     pythonPackages.testscenarios
     pythonPackages.selenium
   ];
+
+  # sandboxing issues on aarch64-darwin, see https://github.com/NixOS/nixpkgs/issues/198495
+  doCheck = postgresql.doCheck;
 
   checkPhase = ''
     runHook preCheck
@@ -233,13 +228,11 @@ pythonPackages.buildPythonApplication rec {
     # in /var/lib/pgadmin and /var/log/pgadmin
     # see https://github.com/pgadmin-org/pgadmin4/blob/fd1c26408bbf154fa455a49ee5c12895933833a3/web/regression/runtests.py#L217-L226
     cp -v regression/test_config.json.in regression/test_config.json
-    substituteInPlace regression/test_config.json --replace "localhost" "$PGHOST"
-    substituteInPlace regression/runtests.py --replace "builtins.SERVER_MODE = None" "builtins.SERVER_MODE = False"
+    substituteInPlace regression/test_config.json --replace-fail "localhost" "$PGHOST"
+    substituteInPlace regression/runtests.py --replace-fail "builtins.SERVER_MODE = None" "builtins.SERVER_MODE = False"
 
     ## Browser test ##
-
-    # don't bother to test kerberos authentication
-    python regression/runtests.py --pkg browser --exclude browser.tests.test_kerberos_with_mocking
+    python regression/runtests.py --pkg browser --exclude ${skippedTests}
 
     ## Reverse engineered SQL test ##
 
@@ -259,7 +252,7 @@ pythonPackages.buildPythonApplication rec {
       This should NOT be used in combination with the `pgadmin4-desktopmode` package as they will interfere.
       '' else ''
       This version is build with SERVER_MODE set to False. It will require access to `~/.pgadmin/`. This version is suitable
-      for single-user deployment or where access to `/var/lib/pgadmin` cannot be granted or the NixOS module cannot be used.
+      for single-user deployment or where access to `/var/lib/pgadmin` cannot be granted or the NixOS module cannot be used (e.g. on MacOS).
       This should NOT be used in combination with the NixOS module `pgadmin` as they will interfere.
       ''}
     '';
@@ -268,5 +261,6 @@ pythonPackages.buildPythonApplication rec {
     changelog = "https://www.pgadmin.org/docs/pgadmin4/latest/release_notes_${lib.versions.major version}_${lib.versions.minor version}.html";
     maintainers = with maintainers; [ gador ];
     mainProgram = "pgadmin4";
+    platforms = platforms.unix;
   };
 }

@@ -3,47 +3,58 @@
 , fetchFromGitHub
 , cmake
 , git
+, pkg-config
 , gperf
 , libmicrohttpd
+, libsodium
+, lz4
 , openssl
 , readline
+, secp256k1
 , zlib
+, nix-update-script
 }:
 
 stdenv.mkDerivation rec {
   pname = "ton";
-  version = "2023.01";
+  version = "2024.06";
 
   src = fetchFromGitHub {
     owner = "ton-blockchain";
     repo = "ton";
     rev = "v${version}";
-    sha256 = "sha256-wb96vh0YcTBFE8EzBItdTf88cvRMLW2XxcGJpNetOi8=";
+    hash = "sha256-5fuRdVayvmM+yK1WsdtWlCZpxz7KKBs+ZRfnueP0Ny0=";
     fetchSubmodules = true;
   };
 
-  postPatch = ''
-    # without this fails on aarch64-darwin with clang-11: error: the clang compiler does not support '-mcpu=apple-m1'
-    substituteInPlace CMakeLists.txt \
-      --replace 'set(TON_ARCH "apple-m1")' ""
-  '';
+  outputs = [ "out" "dev" ];
 
   nativeBuildInputs = [
     cmake
     git
+    pkg-config
   ];
 
   buildInputs = [
     gperf
     libmicrohttpd
+    libsodium
+    lz4
     openssl
     readline
+    secp256k1
     zlib
   ];
 
+  passthru.updateScript = nix-update-script { };
+
   meta = with lib; {
-    description = "A fully decentralized layer-1 blockchain designed by Telegram";
+    # The build fails on darwin as:
+    #   error: aligned allocation function of type 'void *(std::size_t, std::align_val_t)' is only available on macOS 10.13 or newer
+    broken = stdenv.isDarwin;
+    description = "Fully decentralized layer-1 blockchain designed by Telegram";
     homepage = "https://ton.org/";
+    changelog = "https://github.com/ton-blockchain/ton/blob/v${version}/Changelog.md";
     license = licenses.lgpl2Only;
     platforms = platforms.all;
     maintainers = with maintainers; [ misuzu ];

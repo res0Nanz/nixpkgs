@@ -80,6 +80,7 @@ stdenv.mkDerivation {
 
     # qt.conf is not working, so override everything using environment variables
     wrapProgram $out/opt/viber/Viber \
+      --set QT_QPA_PLATFORM "xcb" \
       --set QT_PLUGIN_PATH "$out/opt/viber/plugins" \
       --set QT_XKB_CONFIG_ROOT "${xorg.xkeyboardconfig}/share/X11/xkb" \
       --set QTCOMPOSE "${xorg.libX11.out}/share/X11/locale" \
@@ -100,7 +101,7 @@ stdenv.mkDerivation {
 
   meta = {
     homepage = "https://www.viber.com";
-    description = "An instant messaging and Voice over IP (VoIP) app";
+    description = "Instant messaging and Voice over IP (VoIP) app";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
     platforms = [ "x86_64-linux" ];

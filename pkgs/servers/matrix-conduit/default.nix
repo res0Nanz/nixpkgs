@@ -1,37 +1,58 @@
-{ lib, rustPlatform, fetchFromGitLab, stdenv, darwin, nixosTests, rocksdb_6_23 }:
+{ lib
+, rustPlatform
+, fetchFromGitLab
+, pkg-config
+, sqlite
+, stdenv
+, darwin
+, nixosTests
+, rocksdb
+, rust-jemalloc-sys
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "matrix-conduit";
-  version = "0.5.0";
+  version = "0.8.0";
 
   src = fetchFromGitLab {
     owner = "famedly";
     repo = "conduit";
     rev = "v${version}";
-    sha256 = "sha256-GSCpmn6XRbmnfH31R9c6QW3/pez9KHPjI99dR+ln0P4=";
+    hash = "sha256-/qKPeE2Ptweaf+rHOvdW0TUDLwN9D93MMgDoU4fTzEA=";
   };
 
-  # https://github.com/rust-lang/cargo/issues/11192
-  # https://github.com/ruma/ruma/issues/1441
-  postPatch = ''
-    pushd $cargoDepsCopy
-    patch -p0 < ${./cargo-11192-workaround.patch}
-    for p in ruma*; do echo '{"files":{},"package":null}' > $p/.cargo-checksum.json; done
-    popd
-  '';
+  # We have to use importCargoLock here because `cargo vendor` currently doesn't support workspace
+  # inheritance within Git dependencies, but importCargoLock does.
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+    outputHashes = {
+      "ruma-0.10.1" = "sha256-I1mTeJLo+pgIqFkn1D2De/oACQPkUELjGdyGf3MVuLQ=";
+    };
+  };
 
-  cargoSha256 = "sha256-WFoupcuaG7f7KYBn/uzbOzlHHLurOyvm5e1lEcinxC8=";
+  # Conduit enables rusqlite's bundled feature by default, but we'd rather use our copy of SQLite.
+  preBuild = ''
+    substituteInPlace Cargo.toml --replace "features = [\"bundled\"]" "features = []"
+    cargo update --offline -p rusqlite
+  '';
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
+    pkg-config
   ];
 
-  buildInputs = lib.optionals stdenv.isDarwin [
+  buildInputs = [
+    sqlite
+    rust-jemalloc-sys
+  ] ++ lib.optionals stdenv.isDarwin [
     darwin.apple_sdk.frameworks.Security
+    darwin.apple_sdk.frameworks.SystemConfiguration
   ];
 
-  ROCKSDB_INCLUDE_DIR = "${rocksdb_6_23}/include";
-  ROCKSDB_LIB_DIR = "${rocksdb_6_23}/lib";
+  env = {
+    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+  };
 
   # tests failed on x86_64-darwin with SIGILL: illegal instruction
   doCheck = !(stdenv.isx86_64 && stdenv.isDarwin);
@@ -41,10 +62,10 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = with lib; {
-    description = "A Matrix homeserver written in Rust";
+    description = "Matrix homeserver written in Rust";
     homepage = "https://conduit.rs/";
     license = licenses.asl20;
-    maintainers = with maintainers; [ pstn piegames pimeys ];
+    maintainers = with maintainers; [ pstn pimeys ];
     mainProgram = "conduit";
   };
 }

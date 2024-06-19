@@ -1,22 +1,32 @@
 { stdenv
 , lib
-, fetchurl
-, dpkg
 , autoPatchelfHook
-, makeWrapper
 , copyDesktopItems
-, makeDesktopItem
 , dbus
+, dpkg
+, fetchurl
+, gtk3
+, libpcap
+, makeDesktopItem
+, makeWrapper
 , nftables
 }:
 
 stdenv.mkDerivation rec {
   pname = "cloudflare-warp";
-  version = "2023.1.133";
+  version = "2024.4.133";
+
+  suffix = {
+    aarch64-linux = "arm64";
+    x86_64-linux = "amd64";
+  }.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
   src = fetchurl {
-    url = "https://pkg.cloudflareclient.com/uploads/cloudflare_warp_2023_1_133_1_amd64_734c1ff709.deb";
-    sha256 = "sha256-Yo1JnbXi9vbYYAkmwk4S7JZZE45SV4p4dB55Rt+w+LA=";
+    url = "https://pkg.cloudflareclient.com/pool/jammy/main/c/cloudflare-warp/cloudflare-warp_${version}-1_${suffix}.deb";
+    hash = {
+      aarch64-linux = "sha256-qua+aL4+yvpTBGCVUS1rzJX1KZ3DeaW9Bce9lYWvWOM=";
+      x86_64-linux = "sha256-xZhyYDMjcv8SLfYwclvWBqPDETbeaxiA6jFCg3Nv5gc=";
+    }.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
   nativeBuildInputs = [
@@ -26,7 +36,12 @@ stdenv.mkDerivation rec {
     copyDesktopItems
   ];
 
-  buildInputs = [ dbus ];
+  buildInputs = [
+    dbus
+    gtk3
+    libpcap
+    stdenv.cc.cc.lib
+  ];
 
   desktopItems = [
     (makeDesktopItem {
@@ -41,9 +56,9 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  unpackPhase = ''
-    dpkg-deb -x ${src} ./
-  '';
+  autoPatchelfIgnoreMissingDeps = [
+    "libpcap.so.0.8"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -51,6 +66,7 @@ stdenv.mkDerivation rec {
     mv usr $out
     mv bin $out
     mv etc $out
+    patchelf --replace-needed libpcap.so.0.8 ${libpcap}/lib/libpcap.so $out/bin/warp-dex
     mv lib/systemd/system $out/lib/systemd/
     substituteInPlace $out/lib/systemd/system/warp-svc.service \
       --replace "ExecStart=" "ExecStart=$out"
@@ -69,7 +85,12 @@ stdenv.mkDerivation rec {
     homepage = "https://pkg.cloudflareclient.com/packages/cloudflare-warp";
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
-    maintainers = with maintainers; [ wolfangaukang ];
-    platforms = [ "x86_64-linux" ];
+    mainProgram = "warp-cli";
+    maintainers = with maintainers; [
+      wolfangaukang
+      devpikachu
+      marcusramberg
+    ];
+    platforms = [ "x86_64-linux" "aarch64-linux" ];
   };
 }

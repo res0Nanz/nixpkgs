@@ -6,26 +6,27 @@
 , asciidoctor
 , openssl
 , Security
+, SystemConfiguration
 , ansi2html
 , installShellFiles
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "mdcat";
-  version = "1.1.0";
+  version = "2.1.2";
 
   src = fetchFromGitHub {
-    owner = "lunaryorn";
+    owner = "swsnr";
     repo = "mdcat";
     rev = "mdcat-${version}";
-    sha256 = "sha256-1TP91mZ5f3x2Q0Qv/p+aE+rvWEW3zVArcgELLNWi4JY=";
+    hash = "sha256-qdNORp9THxHWR95uVcYtCy59OQqdop1012thZN5i64w=";
   };
 
   nativeBuildInputs = [ pkg-config asciidoctor installShellFiles ];
   buildInputs = [ openssl ]
-    ++ lib.optional stdenv.isDarwin Security;
+    ++ lib.optionals stdenv.isDarwin [ Security SystemConfiguration ];
 
-  cargoSha256 = "sha256-aqOaU9K+dHwyqPqRnD+Gw2enmHF9eJAAHeP7sGBiWtg=";
+  cargoHash = "sha256-/avxRvT35LxCBWkTYJDCtdd95VC67epZIPCMv994uBo=";
 
   nativeCheckInputs = [ ansi2html ];
   # Skip tests that use the network and that include files.
@@ -54,7 +55,8 @@ rustPlatform.buildRustPackage rec {
 
   meta = with lib; {
     description = "cat for markdown";
-    homepage = "https://github.com/lunaryorn/mdcat";
+    homepage = "https://github.com/swsnr/mdcat";
+    changelog = "https://github.com/swsnr/mdcat/releases/tag/mdcat-${version}";
     license = with licenses; [ mpl20 ];
     maintainers = with maintainers; [ SuperSandro2000 ];
   };

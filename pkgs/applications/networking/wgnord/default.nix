@@ -13,13 +13,13 @@
 
 resholve.mkDerivation rec {
   pname = "wgnord";
-  version = "0.1.10";
+  version = "0.2.1";
 
   src = fetchFromGitHub {
     owner = "phirecc";
     repo = pname;
     rev = version;
-    hash = "sha256-T7dAEgi4tGvrzBABGLzKHhpCx0bxSCtTVI5iJJqJGlE=";
+    hash = "sha256-26cfYXtZVQ7kIRxY6oNGCqIjdw/hjwXhVKimVgolLgk=";
   };
 
   postPatch = ''
@@ -56,10 +56,12 @@ resholve.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "A NordVPN Wireguard (NordLynx) client in POSIX shell";
+    description = "NordVPN Wireguard (NordLynx) client in POSIX shell";
     homepage = "https://github.com/phirecc/wgnord";
     changelog = "https://github.com/phirecc/wgnord/releases/tag/v${version}";
     maintainers = with lib.maintainers; [ urandom ];
     license = licenses.mit;
+    mainProgram = "wgnord";
+    platforms = platforms.linux;
   };
 }

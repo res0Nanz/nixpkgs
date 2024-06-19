@@ -12,13 +12,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zsnes2";
-  version = "2.0.10";
+  version = "2.0.12";
 
   src = fetchFromGitHub {
     owner = "xyproto";
     repo = "zsnes";
     rev = finalAttrs.version;
-    hash = "sha256-QFPl3I2nFWMmgQRGxrlt4Vh5N4SygvBLjeFiQpgRr8o=";
+    hash = "sha256-Xz+9YgMpnHyno7vP67aut4tIyG/gTn7SnU2FO2QMND0=";
   };
 
   nativeBuildInputs = [
@@ -55,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://github.com/xyproto/zsnes";
-    description = "A maintained fork of zsnes";
+    description = "Maintained fork of zsnes";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.AndersonTorres ];
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86;

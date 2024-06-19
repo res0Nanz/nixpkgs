@@ -4,7 +4,7 @@ let
   majorVersion = "1";
   minorVersion = "101";
 in
-stdenvNoCC.mkDerivation (self: {
+stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "f1_8";
   version = "${majorVersion}.${minorVersion}";
 
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation (self: {
   '';
 
   meta = with lib; {
-    homepage = "http://dotcolon.net/font/${self.pname}/";
-    description = "A weighted decorative font";
+    homepage = "http://dotcolon.net/font/${finalAttrs.pname}/";
+    description = "Weighted decorative font";
     platforms = platforms.all;
     maintainers = with maintainers; [ minijackson ];
     license = licenses.ofl;

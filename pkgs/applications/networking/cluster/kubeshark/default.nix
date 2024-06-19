@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "kubeshark";
-  version = "38.5";
+  version = "52.3.68";
 
   src = fetchFromGitHub {
     owner = "kubeshark";
     repo = "kubeshark";
-    rev = version;
-    sha256 = "sha256-xu+IcmYNsFBYhb0Grnqyi31LCG/3XhSh1LH8XakQ3Yk=";
+    rev = "v${version}";
+    hash = "sha256-GDK+GR3MUYUgfY3cgaxWIYSE3uiEscp9DeeY36/zOYo=";
   };
 
-  vendorHash = "sha256-o04XIUsHNqOBkvcejASHNz1HDnV6F9t+Q2Hg8eL/Uoc=";
+  vendorHash = "sha256-0WRmAqslZj63m+kCFKIBgoRX47ZyRuU7ZihmF6wmZy4=";
 
   ldflags = let t = "github.com/kubeshark/kubeshark"; in [
    "-s" "-w"
@@ -47,7 +47,8 @@ buildGoModule rec {
 
   meta = with lib; {
     changelog = "https://github.com/kubeshark/kubeshark/releases/tag/${version}";
-    description = "The API Traffic Viewer for Kubernetes";
+    description = "API Traffic Viewer for Kubernetes";
+    mainProgram = "kubeshark";
     homepage = "https://kubeshark.co/";
     license = licenses.asl20;
     longDescription = ''
@@ -55,6 +56,6 @@ buildGoModule rec {
       Think TCPDump and Wireshark re-invented for Kubernetes
       capturing, dissecting and monitoring all traffic and payloads going in, out and across containers, pods, nodes and clusters.
     '';
-    maintainers = with maintainers; [ bryanasdev000 ];
+    maintainers = with maintainers; [ bryanasdev000 qjoly ];
   };
 }

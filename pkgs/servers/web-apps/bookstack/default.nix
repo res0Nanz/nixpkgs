@@ -16,17 +16,17 @@ let
 
 in package.override rec {
   pname = "bookstack";
-  version = "23.01.1";
+  version = "24.05.1";
 
   src = fetchFromGitHub {
     owner = "bookstackapp";
     repo = pname;
     rev = "v${version}";
-    sha256 = "sha256-S4yGys1Lc2FAd3RKI4KdE9X12rsQyVcPQ+Biwwrnb0I=";
+    sha256 = "1m20435sp4n3dg7am4lh73yw1wdmnsf15wdl554lrklhg7f21s0w";
   };
 
   meta = with lib; {
-    description = "A platform to create documentation/wiki content built with PHP & Laravel";
+    description = "Platform to create documentation/wiki content built with PHP & Laravel";
     longDescription = ''
       A platform for storing and organising information and documentation.
       Details for BookStack can be found on the official website at https://www.bookstackapp.com/.
